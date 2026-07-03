@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Pixel AI</title>
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="css/styles.css">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link href="https://fonts.googleapis.com/css2?family=Bitcount+Single:wght@100..900&display=swap"
+        rel="stylesheet">
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap"
+        rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+
+</head>
+
+<body>
+
+    <!-- Mouse Glow -->
+    <div class="cursor-glow"></div>
+
+    <div class="app">
+
+        <!-- ===================== -->
+        <!-- Sidebar -->
+        <!-- ===================== -->
+
+        <aside class="sidebar" id="sidebar">
+
+            <div class="sidebar-top">
+
+                <button id="menuBtn" class="nav-btn">
+                    <i class="fa-solid fa-bars"></i>
+
+                    <span class="nav-text">
+                        Menu
+                    </span>
+                </button>
+
+                <button class="nav-btn">
+
+                    <i class="fa-solid fa-plus"></i>
+
+                    <span class="nav-text">
+                        New Chat
+                    </span>
+
+                </button>
+
+                <button class="nav-btn">
+
+                    <i class="fa-solid fa-magnifying-glass"></i>
+
+                    <span class="nav-text">
+                        Search
+                    </span>
+
+                </button>
+
+                <button class="nav-btn">
+
+                    <i class="fa-regular fa-message"></i>
+
+                    <span class="nav-text">
+                        Chats
+                    </span>
+
+                </button>
+
+            </div>
+
+            <div class="sidebar-bottom">
+
+                <button class="nav-btn">
+
+                    <i class="fa-solid fa-gear"></i>
+
+                    <span class="nav-text">
+                        Settings
+                    </span>
+
+                </button>
+
+                <button class="nav-btn">
+
+                    <i class="fa-regular fa-user"></i>
+
+                    <span class="nav-text">
+                        Profile
+                    </span>
+
+                </button>
+
+            </div>
+
+        </aside>
+
+        <!-- ===================== -->
+        <!-- Main -->
+        <!-- ===================== -->
+
+        <main class="main">
+
+            <!-- Top Navbar -->
+
+            <header class="topbar">
+
+                <div class="brand">
+
+                    Pixel
+
+                </div>
+
+                <div class="model-selector">
+
+    <button id="modelButton">
+
+        ✨ Auto
+
+        <span>▼</span>
+
+    </button>
+
+    <div class="model-menu" id="modelMenu">
+
+        <div class="model-item" data-model="auto">
+
+            ✨ Auto
+
+        </div>
+
+        <div class="model-item" data-model="llama">
+
+            💬 Llama 3.3 70B
+
+        </div>
+
+        <div class="model-item" data-model="deepseek">
+
+            🧠 DeepSeek R1
+
+        </div>
+
+        <div class="model-item" data-model="qwen">
+
+            💻 Qwen Coder
+
+        </div>
+
+        <div class="model-item" data-model="mistral">
+
+            ⚡ Mistral Small
+
+        </div>
+
+        <div class="model-item" data-model="gemma">
+
+            ✍️ Gemma
+
+        </div>
+
+    </div>
+
+</div>
+
+                <div class="top-actions">
+
+                    <button>
+
+                        <i class="fa-solid fa-magnifying-glass"></i>
+
+                    </button>
+
+                    <button>
+
+                        <i class="fa-solid fa-gear"></i>
+
+                    </button>
+
+                    <button>
+
+                        <i class="fa-regular fa-user"></i>
+
+                    </button>
+
+                </div>
+
+            </header>
+
+            <!-- Chat -->
+
+            <section class="chat-container">
+
+                <div class="welcome">
+
+                    <h1>Pixel</h1>
+
+                    <p>
+
+                        Your intelligent AI companion.
+
+                    </p>
+
+                </div>
+
+                <div id="chatArea">
+
+                </div>
+
+            </section>
+
+            <!-- Prompt -->
+
+            <div class="text_bar">
+
+                <button class="icon-btn">
+
+                    <i class="fa-solid fa-paperclip"></i>
+
+                </button>
+
+                <textarea
+                    rows="1"
+                    placeholder="Ask anything..."></textarea>
+
+                <button class="icon-btn">
+
+                    <i class="fa-solid fa-microphone"></i>
+
+                </button>
+
+                <button class="send-btn">
+
+                    <i class="fa-solid fa-arrow-up"></i>
+
+                </button>
+
+            </div>
+
+        </main>
+
+    </div>
+
+    <!-- Supabase -->
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <script src="js/supabase.js"></script>
+
+    <script src="js/auth.js"></script>
+
+    <script src="js/models.js"></script>
+
+    <script src="js/chat.js"></script>
+
+    <!-- Sidebar -->
+
+    <script>
+
+        const menuBtn = document.getElementById("menuBtn");
+
+        const sidebar = document.getElementById("sidebar");
+
+        menuBtn.onclick = () => {
+
+            sidebar.classList.toggle("expanded");
+
+        };
+
+    </script>
+
+    
+
+</body>
+
+</html>

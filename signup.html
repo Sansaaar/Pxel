@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Pixel AI | Create Account</title>
+
+    <!-- Google Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600&display=swap"
+        rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link
+        rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="css/auth.css">
+
+</head>
+
+<body>
+
+    <div class="cursor-glow"></div>
+
+
+
+
+
+
+
+    <div class="container">
+
+        <!-- LEFT SIDE -->
+
+        <section class="left-panel">
+
+            <div class="left-content">
+
+                <div class="logo">
+
+                    <div class="logo-circle">
+                        P
+                    </div>
+
+                    <h1>Pixel</h1>
+
+                    <p>
+                        Your intelligent AI companion built for creators.
+                    </p>
+
+                </div>
+
+                <div class="feature-list">
+
+                    <div class="feature">
+                        <i class="fa-solid fa-bolt"></i>
+                        <span>Lightning Fast</span>
+                    </div>
+
+                    <div class="feature">
+                        <i class="fa-solid fa-shield-halved"></i>
+                        <span>Private & Secure</span>
+                    </div>
+
+                    <div class="feature">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i>
+                        <span>Creative AI</span>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+        <!-- RIGHT SIDE -->
+
+        <section class="right-panel">
+
+            <div class="login-card">
+
+                <div class="heading">
+
+                    <h2>Create Account</h2>
+
+                    <p>
+             Join Pixel and start creating smarter conversations.
+                    </p>
+
+                </div>
+
+                <form id="signupForm">
+
+    <div class="input-group">
+
+        <label>Username</label>
+
+        <input
+            type="text"
+            id="username"
+            placeholder="Your username">
+
+    </div>
+
+    <div class="input-group">
+
+        <label>Email</label>
+
+        <input
+            type="email"
+            id="email"
+            placeholder="you@example.com">
+
+    </div>
+
+    <div class="input-group">
+
+        <label>Password</label>
+
+        <div class="password-box">
+
+            <input
+                type="password"
+                id="password"
+                placeholder="Create a password">
+
+            <button
+                type="button"
+                class="eye-btn"
+                id="togglePassword">
+
+                <i class="fa-regular fa-eye"></i>
+
+            </button>
+
+        </div>
+
+    </div>
+
+    <div class="input-group">
+
+        <label>Confirm Password</label>
+
+        <div class="password-box">
+
+            <input
+                type="password"
+                id="confirmPassword"
+                placeholder="Confirm password">
+
+            <button
+                type="button"
+                class="eye-btn"
+                id="toggleConfirmPassword">
+
+                <i class="fa-regular fa-eye"></i>
+
+            </button>
+
+        </div>
+
+    </div>
+
+    <!-- Password Strength -->
+    <div class="password-strength">
+
+        <div class="strength-bar">
+
+            <div class="strength-fill"></div>
+
+        </div>
+
+        <span class="strength-text">
+            Password Strength
+            <br>
+        </span>
+
+    </div>
+
+    <button
+        type="submit"
+        class="login-btn">
+
+        Create Account
+
+    </button>
+
+    
+
+
+
+</form>
+
+<button
+    id="googleLogin"
+    class="google-btn"
+    type="button">
+
+    <i class="fa-brands fa-google"></i>
+
+    Continue with Google
+
+</button>
+
+    <p class="signup-text">
+
+        Already have an account?
+
+        <a href="login.html">
+
+            Sign In
+
+        </a>
+
+    </p>
+
+            </div>
+
+        </section>
+
+    </div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase.js"></script>
+<script src="js/signup.js"></script>
+</body>
+
+</html>

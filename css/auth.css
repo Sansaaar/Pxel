@@ -1,0 +1,1214 @@
+/*=========================================================
+    PIXEL AI AUTHENTICATION
+    Version 2.0
+=========================================================*/
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+/*=========================================================
+    VARIABLES
+=========================================================*/
+
+:root{
+
+    --bg:#0A0A0A;
+
+    --panel:#111214;
+
+    --card:#17181C;
+
+    --input:#22242A;
+
+    --input-hover:#2A2D34;
+
+    --gold:#D4AF37;
+
+    --gold-light:#F4E3A2;
+
+    --border:rgba(212,175,55,.12);
+
+    --white:#FFFFFF;
+
+    --secondary:#A3A3A3;
+
+    --shadow:
+    0 25px 60px rgba(0,0,0,.55);
+
+    --transition:.28s ease;
+
+}
+
+/*=========================================================
+    RESET
+=========================================================*/
+
+*{
+
+    margin:0;
+
+    padding:0;
+
+    box-sizing:border-box;
+
+}
+
+html{
+
+    scroll-behavior:smooth;
+
+}
+
+body{
+
+    font-family:"Inter",sans-serif;
+
+    background:var(--bg);
+
+    color:var(--white);
+
+    overflow:hidden;
+
+}
+
+/*=========================================================
+    GRID
+=========================================================*/
+
+.container{
+
+    width:100%;
+
+    height:100vh;
+
+    display:grid;
+
+    grid-template-columns:45% 55%;
+
+}
+
+/*=========================================================
+    LEFT PANEL
+=========================================================*/
+
+.left-panel{
+
+    position:relative;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    padding:80px;
+
+    overflow:hidden;
+
+    background:
+
+    linear-gradient(
+    180deg,
+    #111214,
+    #0F1012);
+
+}
+
+/*=========================================================
+    BACKGROUND GLOW
+=========================================================*/
+
+.left-panel::before{
+
+    content:"";
+
+    position:absolute;
+
+    width:750px;
+
+    height:750px;
+
+    border-radius:50%;
+
+    background:
+
+    radial-gradient(circle,
+    rgba(212,175,55,.08),
+    transparent 70%);
+
+    animation:pulse 10s infinite ease;
+
+}
+
+.left-panel::after{
+
+    content:"";
+
+    position:absolute;
+
+    width:400px;
+
+    height:400px;
+
+    border-radius:50%;
+
+    background:
+
+    radial-gradient(circle,
+    rgba(255,255,255,.03),
+    transparent);
+
+    filter:blur(90px);
+
+}
+
+/*=========================================================
+    LEFT CONTENT
+=========================================================*/
+
+.left-content{
+
+    position:relative;
+
+    z-index:2;
+
+    width:430px;
+
+}
+
+/*=========================================================
+    LOGO
+=========================================================*/
+
+.logo{
+
+    margin-bottom:70px;
+
+}
+
+.logo-circle{
+
+    width:90px;
+
+    height:90px;
+
+    border-radius:24px;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    font-size:42px;
+
+    font-weight:700;
+
+    color:#111;
+
+    background:
+
+    linear-gradient(
+    135deg,
+    var(--gold-light),
+    var(--gold));
+
+    box-shadow:
+
+    0 0 40px rgba(212,175,55,.30);
+
+    transition:var(--transition);
+
+}
+
+.logo-circle:hover{
+
+    transform:
+
+    rotate(-8deg)
+
+    scale(1.05);
+
+}
+
+.logo h1{
+
+    margin-top:25px;
+
+    font-size:56px;
+
+    font-weight:300;
+
+    letter-spacing:2px;
+
+}
+
+.logo p{
+
+    margin-top:15px;
+
+    color:var(--secondary);
+
+    line-height:1.8;
+
+    font-size:17px;
+
+}
+
+/*=========================================================
+    FEATURE LIST
+=========================================================*/
+
+.feature-list{
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:24px;
+
+}
+
+/*=========================================================
+    FEATURE CARD
+=========================================================*/
+
+.feature{
+
+    display:flex;
+
+    gap:18px;
+
+    align-items:flex-start;
+
+    padding:18px 22px;
+
+    background:
+
+    rgba(255,255,255,.02);
+
+    border:
+
+    1px solid rgba(255,255,255,.04);
+
+    border-radius:18px;
+
+    backdrop-filter:blur(8px);
+
+    transition:var(--transition);
+
+}
+
+.feature:hover{
+
+    transform:
+
+    translateX(8px);
+
+    border-color:
+
+    rgba(212,175,55,.18);
+
+    background:
+
+    rgba(255,255,255,.03);
+
+}
+
+.feature i{
+
+    width:46px;
+
+    height:46px;
+
+    border-radius:14px;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    color:var(--gold);
+
+    background:
+
+    rgba(212,175,55,.08);
+
+    font-size:18px;
+
+}
+
+.feature-text h3{
+
+    font-size:17px;
+
+    font-weight:500;
+
+    margin-bottom:6px;
+
+}
+
+.feature-text p{
+
+    color:var(--secondary);
+
+    font-size:14px;
+
+    line-height:1.6;
+
+}
+
+/*=========================================================
+    ANIMATIONS
+=========================================================*/
+
+@keyframes pulse{
+
+    0%{
+
+        transform:scale(.9);
+
+        opacity:.8;
+
+    }
+
+    50%{
+
+        transform:scale(1.08);
+
+        opacity:1;
+
+    }
+
+    100%{
+
+        transform:scale(.9);
+
+        opacity:.8;
+
+    }
+
+}
+
+@keyframes fadeUp{
+
+    from{
+
+        opacity:0;
+
+        transform:translateY(35px);
+
+    }
+
+    to{
+
+        opacity:1;
+
+        transform:none;
+
+    }
+
+}
+
+/*=========================================================
+    RIGHT PANEL
+=========================================================*/
+
+.right-panel{
+
+    position:relative;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    overflow:hidden;
+
+    background:var(--bg);
+
+}
+
+.right-panel::before{
+
+    content:"";
+
+    position:absolute;
+
+    width:650px;
+
+    height:650px;
+
+    border-radius:50%;
+
+    background:
+    radial-gradient(circle,
+    rgba(212,175,55,.05),
+    transparent 70%);
+
+    filter:blur(40px);
+
+    animation:pulse 12s infinite ease;
+}
+
+/*=========================================================
+    LOGIN CARD
+=========================================================*/
+
+.login-card{
+
+    position:relative;
+
+    z-index:2;
+
+    width:470px;
+
+    padding:48px;
+
+    border-radius:30px;
+
+    background:rgba(23,24,28,.82);
+
+    backdrop-filter:blur(22px);
+
+    border:1px solid rgba(212,175,55,.12);
+
+    box-shadow:
+        0 25px 60px rgba(0,0,0,.55),
+        inset 0 1px rgba(255,255,255,.03);
+
+    animation:fadeUp .8s ease;
+
+    transition:var(--transition);
+
+}
+
+.login-card:hover{
+
+    transform:translateY(-4px);
+
+    box-shadow:
+        0 35px 80px rgba(0,0,0,.65),
+        0 0 40px rgba(212,175,55,.06);
+
+}
+
+/*=========================================================
+    HEADER
+=========================================================*/
+
+.heading{
+
+    margin-bottom:34px;
+
+}
+
+.heading h2{
+
+    font-size:34px;
+
+    font-weight:300;
+
+    letter-spacing:.5px;
+
+}
+
+.heading p{
+
+    margin-top:10px;
+
+    color:var(--secondary);
+
+    line-height:1.7;
+
+}
+
+/*=========================================================
+    FORM
+=========================================================*/
+
+form{
+
+    display:flex;
+
+    flex-direction:column;
+
+}
+
+.input-group{
+
+    margin-bottom:22px;
+
+}
+
+.input-group label{
+
+    display:block;
+
+    margin-bottom:10px;
+
+    color:#D9D9D9;
+
+    font-size:14px;
+
+    font-weight:500;
+
+}
+
+/*=========================================================
+    INPUT
+=========================================================*/
+
+.input-group input{
+
+    width:100%;
+
+    height:60px;
+
+    padding:0 20px;
+
+    background:var(--input);
+
+    color:white;
+
+    border:1px solid rgba(212,175,55,.10);
+
+    border-radius:16px;
+
+    outline:none;
+
+    font-size:15px;
+
+    transition:
+        background .25s ease,
+        border .25s ease,
+        box-shadow .25s ease,
+        transform .25s ease;
+
+}
+
+.input-group input::placeholder{
+
+    color:#727272;
+
+}
+
+.input-group input:hover{
+
+    background:var(--input-hover);
+
+}
+
+.input-group input:focus{
+
+    background:var(--input-hover);
+
+    border-color:var(--gold);
+
+    box-shadow:
+        0 0 0 4px rgba(212,175,55,.08),
+        0 0 24px rgba(212,175,55,.12);
+
+}
+
+/*=========================================================
+    PASSWORD
+=========================================================*/
+
+.password-box{
+
+    position:relative;
+
+}
+
+.eye-btn{
+
+    position:absolute;
+
+    top:50%;
+
+    right:18px;
+
+    transform:translateY(-50%);
+
+    width:38px;
+
+    height:38px;
+
+    border:none;
+
+    border-radius:50%;
+
+    background:transparent;
+
+    color:#9A9A9A;
+
+    cursor:pointer;
+
+    transition:var(--transition);
+
+}
+
+.eye-btn:hover{
+
+    color:var(--gold);
+
+    background:rgba(212,175,55,.08);
+
+}
+
+/*=========================================================
+    REMEMBER + FORGOT
+=========================================================*/
+
+.row{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    margin:8px 0 28px;
+
+}
+
+.remember{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:10px;
+
+    color:var(--secondary);
+
+    font-size:14px;
+
+}
+
+.remember input{
+
+    width:16px;
+
+    height:16px;
+
+    accent-color:var(--gold);
+
+    cursor:pointer;
+
+}
+
+.row a{
+
+    text-decoration:none;
+
+    color:var(--gold);
+
+    font-size:14px;
+
+    transition:var(--transition);
+
+}
+
+.row a:hover{
+
+    color:var(--gold-light);
+
+}
+
+/*=========================================================
+    LOGIN BUTTON
+=========================================================*/
+
+.login-btn{
+
+    position:relative;
+
+    overflow:hidden;
+
+    width:100%;
+
+    height:60px;
+
+    border:none;
+    margin-top: 20px;
+
+    border-radius:16px;
+
+    cursor:pointer;
+
+    font-size:16px;
+
+    font-weight:600;
+
+    color:#111;
+
+    background:
+    linear-gradient(
+    135deg,
+    var(--gold-light),
+    var(--gold));
+
+    transition:
+        transform .25s ease,
+        box-shadow .25s ease;
+
+}
+
+.login-btn::before{
+
+    content:"";
+
+    position:absolute;
+
+    left:-120%;
+
+    top:0;
+
+    width:80%;
+
+    height:100%;
+
+    background:
+    linear-gradient(
+    90deg,
+    transparent,
+    rgba(255,255,255,.45),
+    transparent);
+
+    transition:.7s;
+
+}
+
+.login-btn:hover{
+
+    transform:translateY(-3px);
+
+    box-shadow:
+        0 12px 35px rgba(212,175,55,.30);
+
+}
+
+.login-btn:hover::before{
+
+    left:130%;
+
+}
+
+.login-btn:active{
+
+    transform:scale(.98);
+
+}
+
+/*==========================================
+    CURSOR GLOW
+==========================================*/
+
+.cursor-glow{
+
+    position:fixed;
+
+    width:420px;
+
+    height:420px;
+
+    border-radius:50%;
+
+    pointer-events:none;
+
+    z-index:0;
+
+    background:
+    radial-gradient(circle,
+    rgba(212,175,55,.13),
+    rgba(212,175,55,.06),
+    transparent 72%);
+
+    filter:blur(55px);
+
+    transform:
+    translate(-50%,-50%);
+
+    transition:
+
+        left .08s linear,
+
+        top .08s linear,
+
+        opacity .3s;
+
+    opacity:.65;
+
+}
+
+.login-card{
+
+    transform-style:preserve-3d;
+
+    transition:
+        transform .18s ease,
+        box-shadow .25s ease;
+}
+
+/*=========================================================
+    DIVIDER
+=========================================================*/
+
+.divider{
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    margin:32px 0;
+
+    color:#7F7F7F;
+
+    font-size:13px;
+
+    letter-spacing:1px;
+
+}
+
+.divider::before,
+.divider::after{
+
+    content:"";
+
+    flex:1;
+
+    height:1px;
+
+    background:rgba(255,255,255,.08);
+
+}
+
+.divider span{
+
+    margin:0 18px;
+
+}
+
+/*=========================================================
+    GOOGLE BUTTON
+=========================================================*/
+
+.google-btn{
+
+    width:100%;
+
+    height:58px;
+    margin-top: 20px;
+
+    border-radius:16px;
+
+    border:1px solid rgba(255,255,255,.08);
+
+    background:#202228;
+
+    color:white;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    gap:12px;
+
+    cursor:pointer;
+
+    font-size:15px;
+
+    transition:.28s ease;
+
+}
+
+.google-btn i{
+
+    color:#D4AF37;
+
+    font-size:18px;
+
+}
+
+.google-btn:hover{
+
+    background:#292C33;
+
+    border-color:rgba(212,175,55,.18);
+
+    transform:translateY(-2px);
+
+}
+
+/*=========================================================
+    SIGNUP
+=========================================================*/
+
+.signup-text{
+
+    margin-top:30px;
+
+    text-align:center;
+
+    color:#9A9A9A;
+
+    font-size:15px;
+
+}
+
+.signup-text a{
+
+    color:#D4AF37;
+
+    text-decoration:none;
+
+    font-weight:500;
+
+    transition:.3s;
+
+}
+
+.signup-text a:hover{
+
+    color:#F4E3A2;
+
+}
+
+/*=========================================================
+    RESPONSIVE
+=========================================================*/
+
+@media(max-width:1100px){
+
+    .container{
+
+        grid-template-columns:40% 60%;
+
+    }
+
+    .left-content{
+
+        width:340px;
+
+    }
+
+    .logo h1{
+
+        font-size:46px;
+
+    }
+
+}
+
+@media(max-width:900px){
+
+    .container{
+
+        grid-template-columns:1fr;
+
+    }
+
+    .left-panel{
+
+        display:none;
+
+    }
+
+    .right-panel{
+
+        padding:40px;
+
+    }
+
+    .login-card{
+
+        width:100%;
+        max-width:470px;
+
+    }
+
+}
+
+@media(max-width:600px){
+
+    body{
+
+        overflow:auto;
+
+    }
+
+    .right-panel{
+
+        padding:20px;
+
+    }
+
+    .login-card{
+
+        padding:30px 24px;
+
+        border-radius:22px;
+
+    }
+
+    .heading h2{
+
+        font-size:28px;
+
+    }
+
+}
+
+/*==========================================
+SHAKE ANIMATION
+==========================================*/
+
+@keyframes shake{
+
+0%{
+
+transform:translateX(0);
+
+}
+
+25%{
+
+transform:translateX(-6px);
+
+}
+
+50%{
+
+transform:translateX(6px);
+
+}
+
+75%{
+
+transform:translateX(-6px);
+
+}
+
+100%{
+
+transform:translateX(0);
+
+}
+
+}
+
+.shake{
+
+animation:shake .35s;
+
+}
+
+/*==========================================
+SUCCESS BUTTON
+==========================================*/
+
+.login-btn{
+
+position:relative;
+
+overflow:hidden;
+
+}
+
+.login-btn:disabled{
+
+cursor:not-allowed;
+
+opacity:.95;
+
+}
+
+
+.password-strength{
+
+    margin-bottom:25px;
+
+}
+
+.strength-bar{
+
+    width:100%;
+
+    height:7px;
+
+    background:#24262D;
+
+    border-radius:100px;
+
+    overflow:hidden;
+
+    margin-bottom:8px;
+
+}
+
+.strength-fill{
+
+    width:0%;
+
+    height:100%;
+
+    background:#D4AF37;
+
+    transition:.3s;
+
+}
+
+.strength-text{
+
+    color:#9A9A9A;
+
+    font-size:13px;
+
+}
+
+
+
+/*=========================================
+ERROR MESSAGE
+=========================================*/
+
+.error-message{
+
+    display:block;
+
+    margin-top:8px;
+
+    color:#FF5A5A;
+
+    font-size:13px;
+
+    animation:fadeError .25s;
+
+}
+
+@keyframes fadeError{
+
+    from{
+
+        opacity:0;
+
+        transform:translateY(-4px);
+
+    }
+
+    to{
+
+        opacity:1;
+
+        transform:none;
+
+    }
+
+}
