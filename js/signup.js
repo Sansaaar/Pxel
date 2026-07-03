@@ -404,7 +404,7 @@ googleBtn.addEventListener("click", async () => {
 
         options: {
 
-            redirectTo: "chat.goldyn.xyz"
+            redirectTo: "https://chat.goldyn.xyz"
 
         }
 
