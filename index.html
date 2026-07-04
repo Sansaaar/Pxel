@@ -42,13 +42,7 @@
 
             <div class="sidebar-top">
 
-                <button id="menuBtn" class="nav-btn">
-                    <i class="fa-solid fa-bars"></i>
-
-                    <span class="nav-text">
-                        Menu
-                    </span>
-                </button>
+               
 
                 <button class="nav-btn">
 
@@ -118,11 +112,17 @@
 
             <header class="topbar">
 
-                <div class="brand">
+                    <div class="top-left">
 
-                    Pixel
+        <button id="menuBtn" class="menu-btn">
+            <i class="fa-solid fa-bars"></i>
+        </button>
 
-                </div>
+        <div class="brand">
+            Pixel
+        </div>
+
+    </div>
 
                 <div class="model-selector">
 
@@ -136,12 +136,10 @@
 
     <div class="model-menu" id="modelMenu">
 
-        <div class="model-item" data-model="auto">✨ Auto</div>
-        <div class="model-item" data-model="llama">💬 Llama 3.3 70B</div>
-        <div class="model-item" data-model="qwen">💻 Qwen Coder</div>
-        <div class="model-item" data-model="groq">⚡ Groq Compound</div>
-
-
+       <div class="model-item" data-model="auto">✨ Auto</div>
+<div class="model-item" data-model="llama">💬 Llama 3.3 70B</div>
+<div class="model-item" data-model="qwen">💻 Qwen Coder</div>
+<div class="model-item" data-model="groq">⚡ Groq Compound</div>
 
     </div>
 
@@ -226,10 +224,9 @@
     </div>
 
     <!-- Supabase -->
+    <script src="js/config.js"></script>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-    <script src="config.js"></script>
 
     <script src="js/supabase.js"></script>
 
@@ -242,16 +239,32 @@
     <!-- Sidebar -->
 
     <script>
+const menuBtn = document.getElementById("menuBtn");
+const sidebar = document.getElementById("sidebar");
 
-        const menuBtn = document.getElementById("menuBtn");
+menuBtn.addEventListener("click", () => {
 
-        const sidebar = document.getElementById("sidebar");
+    if (window.innerWidth <= 768) {
 
-        menuBtn.onclick = () => {
+        // Mobile
+        if (sidebar.classList.contains("expanded")) {
 
-            sidebar.classList.toggle("expanded");
+            sidebar.classList.remove("expanded");
 
-        };
+        } else {
+
+            sidebar.classList.add("expanded");
+
+        }
+
+    } else {
+
+        // Desktop
+        sidebar.classList.toggle("expanded");
+
+    }
+
+});
 
     </script>
 
