@@ -14,7 +14,7 @@ async function generate(sessionId, message, selectedModel) {
 
     const history = memory.getConversation(sessionId);
 
-    return await groq.generate(model, history);
+    return await groq.generate(model, message);
 
 }
 
