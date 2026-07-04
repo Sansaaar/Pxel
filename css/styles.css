@@ -122,7 +122,7 @@ body{
 
     transition:.35s;
 
-    overflow:hidden;
+    overflow:visible;
 
 }
 
@@ -341,9 +341,7 @@ body{
 
 .top-actions{
 
-    display:flex;
-
-    gap:12px;
+    display:none;
 
 }
 
@@ -476,7 +474,7 @@ body{
 
 #chatArea{
 
-    width:min(900px,90%);
+    width:min(900px,96%);
 
     margin:auto;
 
@@ -1337,33 +1335,62 @@ a:hover{
 
 }
 
-@media(max-width:900px){
+
+@media (max-width:768px){
 
     .sidebar{
 
-        width:70px;
+        position:fixed;
+        left:-260px;
+        top:0;
+        width:260px;
+        height:100vh;
+        z-index:2000;
+        transition:left .3s ease;
 
     }
 
     .sidebar.expanded{
 
-        width:220px;
+        left:0;
+        width:260px;
 
     }
 
+    /* Always show text on mobile */
+.sidebar .nav-text{
+
+    opacity:1 !important;
+
+    visibility:visible !important;
+
+}
+
+     .sidebar .nav-btn{
+
+        justify-content:flex-start;
+
+    }
+
+
+
     .brand{
 
-        font-size:28px;
+        font-size:26px;
 
     }
 
 }
 
+
 @media(max-width:700px){
+
 
     .topbar{
 
-        padding:0 18px;
+        height:60px;
+
+        padding:0 12px;
 
     }
 
@@ -1407,7 +1434,7 @@ a:hover{
 
     .top-actions{
 
-        gap:6px;
+        display: none;
 
     }
 
@@ -1570,7 +1597,9 @@ a:hover{
 
     border-radius:12px;
 
-    padding:10px 14px;
+    padding:8px 12px;
+
+    font-size:14px;
 
     cursor:pointer;
 
@@ -1635,5 +1664,59 @@ a:hover{
 .model-item:hover{
 
     background:#1D1F25;
+
+}
+
+/* ===========================
+        Top Left
+=========================== */
+
+.top-left{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:14px;
+
+}
+
+/* ===========================
+        Menu Button
+=========================== */
+
+.menu-btn{
+
+    width:42px;
+
+    height:42px;
+
+    border:none;
+
+    border-radius:12px;
+
+    background:#17181C;
+
+    color:var(--gold);
+
+    cursor:pointer;
+
+    font-size:18px;
+
+    transition:.25s;
+
+}
+
+.menu-btn:hover{
+
+    background:linear-gradient(
+        135deg,
+        var(--gold-light),
+        var(--gold)
+    );
+
+    color:#111;
+
+    transform:translateY(-2px);
 
 }
