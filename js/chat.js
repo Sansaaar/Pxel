@@ -2,61 +2,41 @@
 // Pixel AI Chat Engine
 // ==========================================
 
-//session id
-let sessionId = localStorage.getItem("pixel-session");
+const sessionId = crypto.randomUUID();
 
-if (!sessionId) {
-
-    sessionId = crypto.randomUUID();
-
-    localStorage.setItem("pixel-session", sessionId);
-
-}
+console.log("Session:", sessionId);
 
 const textarea = document.querySelector("textarea");
-
 const sendBtn = document.querySelector(".send-btn");
-
 const chatArea = document.getElementById("chatArea");
-
 const welcome = document.querySelector(".welcome");
 
-function addMessage(text, sender){
+// ==========================================
+// Add Message
+// ==========================================
+
+function addMessage(text, sender) {
 
     const message = document.createElement("div");
 
-    message.classList.add("message", sender);
+    message.className = `message ${sender}`;
 
-    if(sender === "ai"){
+    if (sender === "ai") {
 
         message.innerHTML = `
+            <div class="ai-avatar">P</div>
 
-        <div class="ai-avatar">
+            <div class="bubble">
 
-            P
+                <span class="stream">${text}</span>
 
-        </div>
-
-        <div class="bubble">
-
-            ${text}
-
-        </div>
-
+            </div>
         `;
 
-    }
-
-    else{
+    } else {
 
         message.innerHTML = `
-
-        <div class="bubble">
-
-            ${text}
-
-        </div>
-
+            <div class="bubble">${text}</div>
         `;
 
     }
@@ -65,12 +45,19 @@ function addMessage(text, sender){
 
     chatArea.scrollTop = chatArea.scrollHeight;
 
+    return message;
+
 }
 
+// ==========================================
+// Thinking
+// ==========================================
 
-async function pixelReply(){
+function showThinking() {
 
     const thinking = document.createElement("div");
+
+    thinking.id = "thinking";
 
     thinking.className = "message ai";
 
@@ -102,223 +89,146 @@ async function pixelReply(){
 
     chatArea.scrollTop = chatArea.scrollHeight;
 
-    await new Promise(resolve => setTimeout(resolve,1200));
+}
 
-    thinking.remove();
+function removeThinking() {
 
-    streamMessage(
-        "Hello! I'm Pixel. NVIDIA AI integration is coming soon 🚀"
-    );
+    const thinking = document.getElementById("thinking");
+
+    if (thinking) thinking.remove();
 
 }
 
-async function streamMessage(text){
+// ==========================================
+// Send Message
+// ==========================================
 
-    const message = document.createElement("div");
+async function sendMessage() {
 
-    message.className = "message ai";
+    const text = textarea.value.trim();
 
-    message.innerHTML = `
-
-        <div class="ai-avatar">
-
-            P
-
-        </div>
-
-        <div class="bubble">
-
-            <span class="stream"></span>
-
-        </div>
-
-    `;
-
-    chatArea.appendChild(message);
-
-    const stream = message.querySelector(".stream");
-
-const words = text.split(" ");
-
-for(const word of words){
-
-    stream.textContent += word + " ";
-
-    chatArea.scrollTop = chatArea.scrollHeight;
-
-    await new Promise(resolve=>setTimeout(resolve,70));
-
-}
-
-    stream.classList.remove("stream");
-
-}
-
-
-async function sendMessage(){
-
-    const text=textarea.value.trim();
-
-    if(!text) return;
+    if (!text) return;
 
     welcome.classList.add("hide");
 
-    createUserMessage(text);
+    addMessage(text, "user");
 
-    textarea.value="";
+    textarea.value = "";
 
-    textarea.style.height="auto";
+    textarea.style.height = "auto";
 
-    sendBtn.disabled=true;
+    sendBtn.disabled = true;
 
     showThinking();
 
-    const reply=await getAIResponse(text);
+    await getAIResponse(text);
 
-    removeThinking();
-
-    createAIMessage(reply);
-
-    sendBtn.disabled=false;
+    sendBtn.disabled = false;
 
     textarea.focus();
 
 }
-sendBtn.addEventListener("click",sendMessage);
 
+sendBtn.addEventListener("click", sendMessage);
 
 // ==========================================
 // Enter to Send
-// Shift + Enter = New Line
 // ==========================================
 
 textarea.addEventListener("keydown", async (e) => {
 
-    // Shift + Enter → New line
-    if (e.key === "Enter" && e.shiftKey) {
-
-        return;
-
-    }
-
-    // Enter → Send
-    if (e.key === "Enter") {
+    if (e.key === "Enter" && !e.shiftKey) {
 
         e.preventDefault();
 
-        if (sendBtn.disabled) return;
+        if (!sendBtn.disabled) {
 
-        await sendMessage();
+            await sendMessage();
+
+        }
 
     }
 
 });
 
-
 // ==========================================
-// Auto Grow Textarea
+// Auto Resize
 // ==========================================
 
-function autoResize(){
+textarea.addEventListener("input", () => {
 
     textarea.style.height = "0px";
 
     textarea.style.height = textarea.scrollHeight + "px";
 
-}
+});
 
-textarea.addEventListener("input", autoResize);
+// ==========================================
+// Streaming Response
+// ==========================================
 
-function createUserMessage(text){
-
-    addMessage(text,"user");
-
-}
-
-function createAIMessage(text){
-
-    streamMessage(text);
-
-}
-
-function showThinking(){
-
-    const thinking = document.createElement("div");
-
-    thinking.className="message ai";
-
-    thinking.id="thinking";
-
-    thinking.innerHTML=`
-
-        <div class="ai-avatar">
-
-            P
-
-        </div>
-
-        <div class="bubble">
-
-            <div class="thinking">
-
-                <div class="thinking-text">
-
-                    ◈ Pixel is thinking...
-
-                </div>
-
-            </div>
-
-        </div>
-
-    `;
-
-    chatArea.appendChild(thinking);
-
-    chatArea.scrollTop=chatArea.scrollHeight;
-
-}
-
-function removeThinking(){
-
-    const thinking=document.getElementById("thinking");
-
-    if(thinking){
-
-        thinking.remove();
-
-    }
-
-}
-
-async function getAIResponse(message){
+async function getAIResponse(message) {
 
     const response = await fetch(`${API_BASE}/api/chat`, {
 
-        method:"POST",
+        method: "POST",
 
-        headers:{
-            "Content-Type":"application/json"
+        headers: {
+
+            "Content-Type": "application/json"
+
         },
 
-       body: JSON.stringify({
+        body: JSON.stringify({
 
-    sessionId,
-    message,
-    model: currentModel.id
+            sessionId,
 
-})
+            message,
+
+            model: currentModel.id
+
+        })
 
     });
 
-const data = await response.json();
+    removeThinking();
 
-if (!response.ok) {
+    // Create empty AI bubble
 
-    throw new Error(data.error || "Unknown server error");
+    const aiMessage = addMessage("", "ai");
 
-}
+    const streamElement = aiMessage.querySelector(".stream");
 
-return data.reply;
+    const reader = response.body.getReader();
+
+    const decoder = new TextDecoder();
+
+    let fullText = "";
+
+    while (true) {
+
+        const { done, value } = await reader.read();
+
+        if (done) break;
+
+        const chunk = decoder.decode(value);
+
+        fullText += chunk;
+
+        if (typeof formatMessage === "function") {
+
+            streamElement.innerHTML = formatMessage(fullText);
+
+        } else {
+
+            streamElement.textContent = fullText;
+
+        }
+
+        chatArea.scrollTop = chatArea.scrollHeight;
+
+    }
+
+    streamElement.classList.remove("stream");
 
 }
