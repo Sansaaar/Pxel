@@ -21,18 +21,25 @@ router.post("/", async (req, res) => {
         memory.addMessage(sessionId, "user", message);
 
         // Generate AI reply
-        const reply = await aiService.generate(
-            sessionId,
-            message,
-            model
-        );
+        const stream = await aiService.generate(
+    sessionId,
+    message,
+    model
+);
 
-        // Save AI reply
-        memory.addMessage(sessionId, "assistant", reply);
+res.setHeader("Content-Type", "text/plain; charset=utf-8");
+res.setHeader("Transfer-Encoding", "chunked");
 
-        res.json({
-            reply
-        });
+for await (const chunk of stream){
+
+    const token =
+        chunk.choices?.[0]?.delta?.content || "";
+
+    res.write(token);
+
+}
+
+res.end();
 
     } catch (err) {
 
