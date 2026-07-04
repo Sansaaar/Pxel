@@ -2,6 +2,17 @@
 // Pixel AI Chat Engine
 // ==========================================
 
+//session id
+let sessionId = localStorage.getItem("pixel-session");
+
+if (!sessionId) {
+
+    sessionId = crypto.randomUUID();
+
+    localStorage.setItem("pixel-session", sessionId);
+
+}
+
 const textarea = document.querySelector("textarea");
 
 const sendBtn = document.querySelector(".send-btn");
@@ -290,17 +301,24 @@ async function getAIResponse(message){
             "Content-Type":"application/json"
         },
 
-        body:JSON.stringify({
+       body: JSON.stringify({
 
-            message,
-            model:currentModel.id
+    sessionId,
+    message,
+    model: currentModel.id
 
-        })
+})
 
     });
 
-    const data = await response.json();
+const data = await response.json();
 
-    return data.reply;
+if (!response.ok) {
+
+    throw new Error(data.error || "Unknown server error");
+
+}
+
+return data.reply;
 
 }
