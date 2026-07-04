@@ -13,34 +13,23 @@ const MODELS = {
     },
 
     llama: {
-        id: "meta/llama-3.3-70b-instruct",
+        id: "llama-3.3-70b-versatile",
         name: "Llama 3.3 70B",
         icon: "💬"
     },
 
-    deepseek: {
-        id: "deepseek-ai/deepseek-r1",
-        name: "DeepSeek R1",
-        icon: "🧠"
-    },
-
     qwen: {
-        id: "qwen/qwen2.5-coder-32b-instruct",
+        id: "qwen/qwen3-32b",
         name: "Qwen Coder",
         icon: "💻"
     },
-
-    mistral: {
-        id: "mistralai/mistral-small",
-        name: "Mistral Small",
+    
+            groq: {
+        id: "groq/compound",
+        name: "Groq Compound",
         icon: "⚡"
-    },
-
-    gemma: {
-        id: "google/gemma-2-2b-it",
-        name: "Gemma",
-        icon: "✍️"
     }
+
 
 };
 
