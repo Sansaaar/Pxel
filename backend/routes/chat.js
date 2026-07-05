@@ -1,3 +1,4 @@
+const db = require("../database/messages");
 const express = require("express");
 const router = express.Router();
 
@@ -8,36 +9,57 @@ router.post("/", async (req, res) => {
 
     try {
 
-        const { sessionId, message, model } = req.body;
+        const { conversationId, message, model } = req.body;
 
         // Validate request
-        if (!sessionId || !message) {
+        if (!conversationId || !message) {
             return res.status(400).json({
-                error: "sessionId and message are required."
+                error: "conversationId and message are required."
             });
         }
 
         // Save user message
-        memory.addMessage(sessionId, "user", message);
+        memory.addMessage(conversationId, "user", message);
+
+await db.saveMessage(
+    conversationId,
+    "user",
+    message
+);
 
         // Generate AI reply
         const stream = await aiService.generate(
-    sessionId,
+    conversationId,
     message,
     model
 );
 
 res.setHeader("Content-Type", "text/plain; charset=utf-8");
 res.setHeader("Transfer-Encoding", "chunked");
+let fullReply = "";
 
 for await (const chunk of stream){
 
     const token =
         chunk.choices?.[0]?.delta?.content || "";
 
+    fullReply += token;
+
     res.write(token);
 
 }
+
+memory.addMessage(
+    conversationId,
+    "assistant",
+    fullReply
+);
+
+await db.saveMessage(
+    conversationId,
+    "assistant",
+    fullReply
+);
 
 res.end();
 

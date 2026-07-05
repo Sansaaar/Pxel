@@ -2,50 +2,24 @@
 // Conversation Memory
 // ==========================================
 
-const crypto = require("crypto");
 
 const conversations = new Map();
 
+function getConversation(conversationId) {
 
-// ==========================================
-// Create Session
-// ==========================================
+    if (!conversations.has(conversationId)) {
 
-function createSession() {
-
-    const sessionId = crypto.randomUUID();
-
-    conversations.set(sessionId, []);
-
-    return sessionId;
-
-}
-
-
-// ==========================================
-// Get Conversation
-// ==========================================
-
-function getConversation(sessionId) {
-
-    if (!conversations.has(sessionId)) {
-
-        conversations.set(sessionId, []);
+        conversations.set(conversationId, []);
 
     }
 
-    return conversations.get(sessionId);
+    return conversations.get(conversationId);
 
 }
 
+function addMessage(conversationId, role, content) {
 
-// ==========================================
-// Add Message
-// ==========================================
-
-function addMessage(sessionId, role, content) {
-
-    const history = getConversation(sessionId);
+    const history = getConversation(conversationId);
 
     history.push({
         role,
@@ -61,39 +35,7 @@ function addMessage(sessionId, role, content) {
 
 }
 
-
-// ==========================================
-// Delete Session
-// ==========================================
-
-function deleteSession(sessionId) {
-
-    conversations.delete(sessionId);
-
-}
-
-
-// ==========================================
-// Get All Sessions
-// ==========================================
-
-function getSessions() {
-
-    return [...conversations.keys()];
-
-}
-
-
 module.exports = {
-
-    createSession,
-
     getConversation,
-
-    addMessage,
-
-    deleteSession,
-
-    getSessions
-
+    addMessage
 };

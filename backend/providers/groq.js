@@ -4,33 +4,32 @@ const client = new Groq({
     apiKey: process.env.GROQ_API_KEY
 });
 
-async function generate(model, message) {
+async function generate(model, history) {
 
-    const completion = await client.chat.completions.create({
+    const completion =
+        await client.chat.completions.create({
 
-        model,
+            model,
 
-        messages: [
+            messages: [
 
-            {
-                role: "system",
-                content: "You are Pixel, a premium AI assistant. Be concise, helpful and friendly."
-            },
+                {
+                    role: "system",
+                    content:
+                        "You are Pixel, a premium AI assistant. Be concise, helpful and friendly."
+                },
 
-            {
-                role: "user",
-                content: message
-            }
+                ...history
 
-        ],
+            ],
 
-        temperature: 0.7,
+            temperature: 0.7,
 
-        max_completion_tokens: 1024,
+            max_completion_tokens: 4096,
 
-        stream: true
+            stream: true
 
-    });
+        });
 
     return completion;
 

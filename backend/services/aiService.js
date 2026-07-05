@@ -2,7 +2,7 @@ const chooseModel = require("./chooseModel");
 const groq = require("../providers/groq");
 const memory = require("../memory/conversations");
 
-async function generate(sessionId, message, selectedModel) {
+async function generate(conversationId, message, selectedModel) {
 
     let model = selectedModel;
 
@@ -12,9 +12,9 @@ async function generate(sessionId, message, selectedModel) {
 
     console.log("Using model:", model);
 
-    const history = memory.getConversation(sessionId);
+    const history = memory.getConversation(conversationId);
 
-    return await groq.generate(model, message);
+    return await groq.generate(model, history);
 
 }
 

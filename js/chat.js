@@ -2,9 +2,7 @@
 // Pixel AI Chat Engine
 // ==========================================
 
-const sessionId = crypto.randomUUID();
-
-console.log("Session:", sessionId);
+console.log("Pixel Chat Loaded");
 
 const textarea = document.querySelector("textarea");
 const sendBtn = document.querySelector(".send-btn");
@@ -63,11 +61,7 @@ function showThinking() {
 
     thinking.innerHTML = `
 
-        <div class="ai-avatar">
-
-            P
-
-        </div>
+        <div class="ai-avatar">P</div>
 
         <div class="bubble">
 
@@ -109,6 +103,18 @@ async function sendMessage() {
 
     if (!text) return;
 
+    // Create conversation only once
+    let isNewConversation = false;
+
+    if (!currentConversation) {
+
+    await createConversation();
+
+    isNewConversation = true;
+
+}
+    
+
     welcome.classList.add("hide");
 
     addMessage(text, "user");
@@ -122,6 +128,15 @@ async function sendMessage() {
     showThinking();
 
     await getAIResponse(text);
+
+    if (isNewConversation) {
+
+    await renameConversation(
+        currentConversation,
+        text
+    );
+
+}
 
     sendBtn.disabled = false;
 
@@ -181,7 +196,7 @@ async function getAIResponse(message) {
 
         body: JSON.stringify({
 
-            sessionId,
+            conversationId: currentConversation, // backend still expects sessionId
 
             message,
 
@@ -192,8 +207,6 @@ async function getAIResponse(message) {
     });
 
     removeThinking();
-
-    // Create empty AI bubble
 
     const aiMessage = addMessage("", "ai");
 
@@ -211,13 +224,11 @@ async function getAIResponse(message) {
 
         if (done) break;
 
-        const chunk = decoder.decode(value);
-
-        fullText += chunk;
+        fullText += decoder.decode(value);
 
         if (typeof formatMessage === "function") {
 
-            streamElement.innerHTML = formatMessage(fullText);
+            streamElement.innerHTML = fullText;
 
         } else {
 
@@ -229,6 +240,21 @@ async function getAIResponse(message) {
 
     }
 
-    streamElement.classList.remove("stream");
+    // Stream finished
+
+streamElement.innerHTML =
+    formatMessage(fullText);
+
+// Highlight every code block
+
+streamElement
+.querySelectorAll("pre code")
+.forEach(block=>{
+
+    hljs.highlightElement(block);
+
+});
+
+streamElement.classList.remove("stream");
 
 }

@@ -1,3 +1,3 @@
 # Pxel
 
-LOGIN WORKING!!!
+PIXEL V0.5
