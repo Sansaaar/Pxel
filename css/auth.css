@@ -178,14 +178,17 @@ body{
 =========================================================*/
 
 .logo{
-
+    
     margin-bottom:70px;
 
 }
 
-.logo-circle{
-    width:70px;
-    height:70px;
+.logo-circle{           
+    display:block;
+    margin-left: auto;
+    margin-right: auto;
+    width: 200px;
+    height:500;
 
     display:flex;
     justify-content:center;
@@ -193,7 +196,7 @@ body{
 }
 
 .logo-img{
-    width:150%;
+    width:125%;
     height:150%;
     object-fit:contain;
 }
@@ -202,11 +205,14 @@ body{
 
     margin-top:25px;
 
-    font-size:56px;
+    font-size:85px;
 
-    font-weight:300;
-
+    font-weight:400;
+    text-align: center;
     letter-spacing:2px;
+
+    font-family:"Bitcount Single";
+    color:yellow;
 
 }
 
@@ -234,6 +240,8 @@ body{
 
     gap:24px;
 
+    text-align:center;
+
 }
 
 /*=========================================================
@@ -243,22 +251,21 @@ body{
 .feature{
 
     display:flex;
-
+    font-family: "Bitcount Single";
+  
+    margin-top: auto;
+    margin-right: auto;
     gap:18px;
 
-    align-items:flex-start;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
 
     padding:18px 22px;
 
-    background:
 
-    rgba(255,255,255,.02);
 
-    border:
 
-    1px solid rgba(255,255,255,.04);
-
-    border-radius:18px;
 
     backdrop-filter:blur(8px);
 
@@ -272,13 +279,6 @@ body{
 
     translateX(8px);
 
-    border-color:
-
-    rgba(212,175,55,.18);
-
-    background:
-
-    rgba(255,255,255,.03);
 
 }
 
@@ -480,18 +480,21 @@ body{
 }
 
 .heading h2{
+    font-family:"Bitcount Single";
+    font-size:40px;
 
-    font-size:34px;
-
-    font-weight:300;
-
+    font-weight:400;
+    text-align:center;
     letter-spacing:.5px;
+    color:var(--gold)
 
 }
 
 .heading p{
-
+    font-family:"Bitcount Single";
     margin-top:10px;
+    font-size:10px; 
+    text-align:center;
 
     color:var(--secondary);
 
@@ -511,80 +514,74 @@ form{
 
 }
 
-.input-group{
-
-    margin-bottom:22px;
-
+/* Fixed the missing dot here */
+.input-group {
+    margin-bottom: 22px;
 }
 
-.input-group label{
+.input-group label {
+    display: block;
+    margin-bottom: 10px;
+    color: #D9D9D9;
+    font-size: 14px;
+    font-weight: 500;
+}
 
-    display:block;
+/*=========================================================
+    INPUT WRAPPER & ICON FIX
+=========================================================*/
+.input-wrapper {
+    position: relative;
+    width: 100%;
+}
 
-    margin-bottom:10px;
-
-    color:#D9D9D9;
-
-    font-size:14px;
-
-    font-weight:500;
-
+.input-wrapper i {
+    position: absolute;
+    left: 20px; /* Positions the icon inside the left edge */
+    top: 50%;
+    transform: translateY(-50%); /* Perfectly centers it vertically */
+    color: #D4AF37;
+    font-size: 18px;
+    pointer-events: none; /* Prevents the icon from blocking clicks to the input */
 }
 
 /*=========================================================
     INPUT
 =========================================================*/
-
-.input-group input{
-
-    width:100%;
-
-    height:60px;
-
-    padding:0 20px;
-
-    background:var(--input);
-
-    color:white;
-
-    border:1px solid rgba(212,175,55,.10);
-
-    border-radius:16px;
-
-    outline:none;
-
-    font-size:15px;
-
+.input-group input {
+    width: 100%;
+    height: 60px;
+    /* Adjusted padding: top/bottom 0, right 20px, bottom 0, left 50px */
+    /* The 50px left padding prevents text from typing over the icon */
+    padding: 0 20px 0 50px; 
+    
+    background: var(--input);
+    color: white;
+    border: 1px solid rgba(212,175,55,.10);
+    border-radius: 16px;
+    outline: none;
+    font-size: 15px;
     transition:
         background .25s ease,
         border .25s ease,
         box-shadow .25s ease,
         transform .25s ease;
-
 }
 
-.input-group input::placeholder{
-
-    color:#727272;
-
+.input-group input::placeholder {
+    color: #727272;
 }
 
-.input-group input:hover{
-
-    background:var(--input-hover);
-
+.input-group input:hover {
+    background: var(--input-hover);
 }
 
-.input-group input:focus{
-
-    background:var(--input-hover);
-
-    border-color:var(--gold);
-
+.input-group input:focus {
+    background: var(--input-hover);
+    border-color: var(--gold);
     box-shadow:
         0 0 0 4px rgba(212,175,55,.08),
         0 0 24px rgba(212,175,55,.12);
-
 }
 
 /*=========================================================
@@ -714,7 +711,7 @@ form{
 
     cursor:pointer;
 
-    font-size:16px;
+    font-size:20px;
 
     font-weight:600;
 
