@@ -27,6 +27,18 @@ body{
     font-family:"Inter",sans-serif;
     overflow:hidden;
     overflow-x:hidden;
+
+        background:
+        linear-gradient(
+            180deg,
+            rgba(17,18,20,0.95),
+            rgba(15,16,18,0.95)
+        ),
+        url("../assets/texture.png");
+
+    background-repeat: repeat;
+    background-size: 350px;
+    background-position: center;
 }
 /* ===============================
         Mouse Glow
@@ -335,14 +347,58 @@ body{
     align-items:flex-end;
     gap:12px;
     padding:14px;
-    background:#17181C;
+
+    background:linear-gradient(
+        180deg,
+        rgba(17,18,20,.92),
+        rgba(15,16,18,.92)
+    );
+
     border:1px solid rgba(212,175,55,.18);
     border-radius:28px;
-    transition:.3s;
     box-shadow:0 10px 35px rgba(0,0,0,.55);
+
+    position:relative;
+    overflow:hidden;
 }
+
+.text_bar::before{
+    content:"";
+    position:absolute;
+    inset:0;
+
+    background:url("../assets/texture.png") repeat;
+    background-size:250px;
+
+    opacity:.05;      /* 5% visibility */
+    filter:blur(2px);
+
+    pointer-events:none;
+    z-index:0;
+}
+
+.text_bar::before{
+    content:"";
+    position:absolute;
+    inset:0;
+
+    background:url("../assets/texture.png") repeat;
+    background-size:250px;
+
+    opacity:.1;/* 5% visibility */
+    filter:blur(2px);
+
+    pointer-events:none;
+    z-index:0;
+}
+
+.text_bar>*{
+    position:relative;
+    z-index:1;
+}
+
 /* Hover */
-.text_bar:hover{
+.hover{
     border-color:rgba(212,175,55,.45);
     box-shadow:0 0 25px rgba(212,175,55,.10), 0 12px 40px rgba(0,0,0,.6);
 }
