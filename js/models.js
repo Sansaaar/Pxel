@@ -14,20 +14,20 @@ const MODELS = {
 
     llama: {
         id: "llama-3.3-70b-versatile",
-        name: "Fast",
+        name: "Llama 3.3 70B",
         icon: "💬"
     },
 
 
     qwen: {
         id: "qwen/qwen3-32b",
-        name: "Code",
+        name: "Qwen Coder",
         icon: "💻"
     },
 
         groq: {
         id: "groq/compound",
-        name: "Thinking",
+        name: "Groq Compound",
         icon: "⚡"
     },
 
