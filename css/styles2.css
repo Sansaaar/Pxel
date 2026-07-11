@@ -181,10 +181,15 @@ button:focus-visible, textarea:focus-visible { outline: 2px solid var(--gold-lig
    pointer-events on everything in .main so there is zero ambiguity about
    what can receive a click/tap. */
 .sidebar-overlay {
-    display:none;
+    /* overlay is always in flow but hidden via visibility/opacity so
+       toggling the `.show` class is effective on mobile without
+       relying on `display` which prevents event handling. */
+    
+    display: none;
+    opacity: 0;
     position: fixed;
     inset: 0;
-    z-index: var(--z-overlay);
+    z-index: calc(var(--z-sidebar) - 10);
     visibility: hidden;
     background: rgba(0, 0, 0, 0.54);
     opacity: 0;
@@ -442,10 +447,27 @@ body::before, body::after, .cursor-glow, .main::before, .sidebar::before, .sideb
     .app { display: block; padding: 0; height: 100dvh; }
     .main { width: 100%; height: 100%; border: 0; border-radius: 0; }
 
+    .sidebar-overlay {
+    /* overlay is always in flow but hidden via visibility/opacity so
+       toggling the `.show` class is effective on mobile without
+       relying on `display` which prevents event handling. */
+    
+    display: block;
+    opacity: 0;
+    position: fixed;
+    inset: 0;
+    z-index: calc(var(--z-sidebar) - 10);
+    visibility: hidden;
+    background: rgba(0, 0, 0, 0.54);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--ease), visibility var(--ease);
+}
+
     /* Off-canvas sidebar */
     .sidebar {
         position: fixed;
-        z-index: var(--z-sidebar);
+        z-index: var(--z-sidebar) !important;
         top: 0;
         bottom: 0;
         left: 0;
@@ -454,6 +476,7 @@ body::before, body::after, .cursor-glow, .main::before, .sidebar::before, .sideb
         border: 0;
         border-radius: 0 20px 20px 0;
         transform: translateX(-105%);
+        pointer-events: auto;
     }
     .sidebar.expanded {
         width: min(82vw, var(--sidebar-expanded));
@@ -519,6 +542,22 @@ body::before, body::after, .cursor-glow, .main::before, .sidebar::before, .sideb
 }
 
 @media (max-width: 520px) {
+    .sidebar-overlay {
+    /* overlay is always in flow but hidden via visibility/opacity so
+       toggling the `.show` class is effective on mobile without
+       relying on `display` which prevents event handling. */
+    
+    display: block;
+    opacity: 0;
+    position: fixed;
+    inset: 0;
+    z-index: calc(var(--z-sidebar) - 10);
+    visibility: hidden;
+    background: rgba(0, 0, 0, 0.54);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--ease), visibility var(--ease);
+}
     :root { --composer-space: 136px; }
     .floating-actions { height: 38px; }
     #menuBtn, #settingsTopBtn, .floating-btn, .model-button { height: 38px; }
