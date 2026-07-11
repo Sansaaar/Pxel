@@ -14,21 +14,22 @@ const MODELS = {
 
     llama: {
         id: "llama-3.3-70b-versatile",
-        name: "Llama 3.3 70B",
+        name: "Fast",
         icon: "💬"
     },
 
+
     qwen: {
         id: "qwen/qwen3-32b",
-        name: "Qwen Coder",
+        name: "Code",
         icon: "💻"
     },
-    
-            groq: {
+
+        groq: {
         id: "groq/compound",
-        name: "Groq Compound",
+        name: "Thinking",
         icon: "⚡"
-    }
+    },
 
 
 };
@@ -43,38 +44,36 @@ if (savedModel) {
 
 }
 
+const button = document.getElementById("modelButton");
+const menu = document.getElementById("modelMenu");
+
+if (!button || !menu) {
+    console.warn("Model selector is not available on this page.");
+} else {
+
+button.innerHTML = `
+    ${currentModel.icon}
+    ${currentModel.name}
+    <span>▼</span>
+`;
+
 
 // ==========================================
 // Model Selector Logic
 // ==========================================
 
-const button = document.getElementById("modelButton");
-
-const menu = document.getElementById("modelMenu");
-
-console.log(button);
-console.log(menu);
-
 button.addEventListener("click", () => {
-
-    console.log("Button clicked");
-
     menu.classList.toggle("show");
-
-    console.log(menu.className);
+    button.setAttribute("aria-expanded", menu.classList.contains("show"));
 
 });
 
 document.querySelectorAll(".model-item").forEach(item => {
 
     item.addEventListener("click", () => {
-            console.log(item.dataset.model);
-
         const key = item.dataset.model;
 
         currentModel = MODELS[key];
-
-        console.log(currentModel);
 
         button.innerHTML = `
             ${currentModel.icon}
@@ -83,7 +82,17 @@ document.querySelectorAll(".model-item").forEach(item => {
         `;
 
         menu.classList.remove("show");
+        button.setAttribute("aria-expanded", "false");
+        localStorage.setItem("pixel-model", JSON.stringify(currentModel));
 
     });
 
 });
+
+document.addEventListener("click", event => {
+    if (!event.target.closest(".model-selector")) {
+        menu.classList.remove("show");
+        button.setAttribute("aria-expanded", "false");
+    }
+});
+}

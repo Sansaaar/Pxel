@@ -9,7 +9,8 @@
     <title>Pixel AI</title>
 
     <!-- CSS -->
-    <link rel="stylesheet" href="css/styles.css">
+     <link rel="stylesheet" href="css/styles.css">
+    
     <link rel="stylesheet"
 href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github-dark.min.css">
 
@@ -50,24 +51,26 @@ href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github-
 
     <div class="sidebar-header">
 
+    <div class="sidebar-logo">
+
+        <img src="assets/pixel.png" alt="Pixel" id="Pixel">
+
+        <span>Pixel</span>
+
+    </div>
+
         <button id="newChatBtn" class="new-chat">
 
-            <i class="fa-solid fa-plus"></i>
+            <i class="fa-solid fa-pen-to-square"></i>
 
             <span>New Chat</span>
 
         </button>
 
-        <div class="search-box">
-
+        <button id="searchChatsBtn" class="sidebar-action" type="button" title="Search chats">
             <i class="fa-solid fa-magnifying-glass"></i>
-
-            <input
-                type="text"
-                id="searchConversation"
-                placeholder="Search chats">
-
-        </div>
+            <span>Search chats</span>
+        </button>
 
     </div>
 
@@ -131,31 +134,21 @@ href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github-
 
     <div class="sidebar-footer">
 
-        <button class="nav-btn">
+    <button id="settingsBtn" class="nav-btn" type="button">
+        <i class="fa-solid fa-sliders"></i>
+        <span class="nav-text">Settings</span>
+    </button>
 
-            <i class="fa-solid fa-gear"></i>
+    <button id="profileBtn" class="profile-button" type="button">
+        <span class="profile-avatar" id="profileAvatar">P</span>
+        <span class="profile-details">
+            <strong id="profileName">Pixel user</strong>
+            <small id="profileEmail">Manage account</small>
+        </span>
+        <i class="fa-solid fa-ellipsis"></i>
+    </button>
 
-            <span class="nav-text">
-
-                Settings
-
-            </span>
-
-        </button>
-
-        <button class="nav-btn">
-
-            <i class="fa-regular fa-user"></i>
-
-            <span class="nav-text">
-
-                Profile
-
-            </span>
-
-        </button>
-
-    </div>
+</div>
 
 </aside>
 
@@ -170,83 +163,17 @@ href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github-
             <!-- Top Bar -->
             <!-- ===================== -->
 
-            <header class="topbar">
+            <div class="floating-actions">
 
-                <div class="top-left">
+    <button id="menuBtn" class="floating-btn">
+        <i class="fa-solid fa-bars"></i>
+    </button>
 
-                    <button id="menuBtn" class="menu-btn">
+    <button id="settingsTopBtn" class="floating-btn" type="button" aria-label="Open settings" onclick="const panel=document.getElementById('settingsPanel'); panel.open ? panel.close() : panel.showModal();">
+        <i class="fa-solid fa-gear"></i>
+    </button>
 
-                        <i class="fa-solid fa-bars"></i>
-
-                    </button>
-
-                    <div class="brand">
-
-                        Pixel
-
-                    </div>
-
-                </div>
-
-                <!-- Model Selector -->
-
-                <div class="model-selector">
-
-                    <button id="modelButton">
-
-                        ✨ Auto
-
-                        <span>▼</span>
-
-                    </button>
-
-                    <div class="model-menu" id="modelMenu">
-
-                        <div class="model-item" data-model="auto">
-                            ✨ Auto
-                        </div>
-
-                        <div class="model-item" data-model="llama">
-                            💬 Llama 3.3 70B
-                        </div>
-
-                        <div class="model-item" data-model="qwen">
-                            💻 Qwen Coder
-                        </div>
-
-                        <div class="model-item" data-model="groq">
-                            ⚡ Groq Compound
-                        </div>
-
-                    </div>
-
-                </div>
-
-                <!-- Right Buttons -->
-
-                <div class="top-actions">
-
-                    <button>
-
-                        <i class="fa-solid fa-magnifying-glass"></i>
-
-                    </button>
-
-                    <button>
-
-                        <i class="fa-solid fa-gear"></i>
-
-                    </button>
-
-                    <button>
-
-                        <i class="fa-regular fa-user"></i>
-
-                    </button>
-
-                </div>
-
-            </header>
+</div>
 
             <!-- ===================== -->
             <!-- Chat -->
@@ -263,6 +190,19 @@ href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github-
                         Your intelligent AI companion.
 
                     </p>
+                    <header class="topbar">
+                        <div class="top-left">
+                            <button id="settingsTopBtn" class="topbtn settings-btn" type="button" aria-label="Open settings" onclick="window.openPixelSettings(event)">
+                                <i class="fa-solid fa-gear"></i>
+                            </button>
+                        </div>
+                        <div class="top-right">
+                            <button id="menuBtn" class="topbtn menu-btn" aria-label="Toggle sidebar">
+                                <span class="lines" aria-hidden="true"></span>
+                                <span class="sr-only">Menu</span>
+                            </button>
+                        </div>
+                    </header>
 
                 </div>
 
@@ -282,15 +222,19 @@ href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github-
 
                 </button>
 
+                <div class="model-selector">
+                    <button id="modelButton" class="model-button" type="button" aria-label="Choose AI model" aria-haspopup="true" aria-expanded="false"></button>
+                    <div id="modelMenu" class="model-menu" role="menu">
+                        <button class="model-item" type="button" data-model="auto" role="menuitem">Auto</button>
+                        <button class="model-item" type="button" data-model="llama" role="menuitem">Llama 3.3 70B</button>
+                        <button class="model-item" type="button" data-model="qwen" role="menuitem">Qwen Coder</button>
+                        <button class="model-item" type="button" data-model="groq" role="menuitem">Groq Compound</button>
+                    </div>
+                </div>
+
                 <textarea
                     rows="1"
                     placeholder="Ask anything..."></textarea>
-
-                <button class="icon-btn">
-
-                    <i class="fa-solid fa-microphone"></i>
-
-                </button>
 
                 <button class="send-btn">
 
@@ -302,6 +246,45 @@ href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github-
 
         </main>
 
+    </div>
+
+    <div id="searchPanel" class="side-panel" aria-hidden="true">
+        <div class="panel-header"><h2>Search chats</h2><button class="panel-close" type="button" aria-label="Close"><i class="fa-solid fa-xmark"></i></button></div>
+        <label class="search-field"><i class="fa-solid fa-magnifying-glass"></i><input id="chatSearchInput" type="search" placeholder="Search your conversations"></label>
+        <div id="searchResults" class="search-results"></div>
+    </div>
+
+    <dialog id="settingsPanel" class="settings-dialog">
+        <div class="panel-header"><h2>Settings</h2><button class="panel-close" type="button" aria-label="Close"><i class="fa-solid fa-xmark"></i></button></div>
+        <div class="settings-layout">
+            <nav class="settings-nav" aria-label="Settings categories">
+                <button class="settings-tab active" type="button" data-settings-tab="account"><i class="fa-regular fa-user"></i> Account</button>
+                <button class="settings-tab" type="button" data-settings-tab="appearance"><i class="fa-solid fa-wand-magic-sparkles"></i> Appearance</button>
+                <button class="settings-tab" type="button" data-settings-tab="behavior"><i class="fa-solid fa-sliders"></i> Behavior</button>
+                <button class="settings-tab" type="button" data-settings-tab="customize"><i class="fa-solid fa-palette"></i> Customize</button>
+                <button class="settings-tab" type="button" data-settings-tab="data"><i class="fa-solid fa-database"></i> Data controls</button>
+            </nav>
+            <div class="settings-content">
+                <section class="settings-page active" data-settings-page="account"><h3>Account</h3><p class="settings-intro">Manage your Pixel profile and session.</p><button id="openProfileSettingsBtn" class="panel-action" type="button"><i class="fa-regular fa-user"></i> Edit profile</button><button id="logoutSettingsBtn" class="panel-action" type="button"><i class="fa-solid fa-arrow-right-from-bracket"></i> Sign out</button></section>
+                <section class="settings-page" data-settings-page="appearance"><h3>Appearance</h3><label class="setting-row"><span><strong>Light mode</strong><small>Use Pixel with a bright, warm surface</small></span><input id="lightModeToggle" type="checkbox"></label><label class="setting-row"><span><strong>Reduce motion</strong><small>Use calmer interface animations</small></span><input id="reduceMotionToggle" type="checkbox"></label><label class="setting-row"><span><strong>Compact conversations</strong><small>Fit more chats in the sidebar</small></span><input id="compactChatsToggle" type="checkbox"></label><label class="setting-row"><span><strong>Show background texture</strong><small>Keep the subtle premium surface detail</small></span><input id="textureToggle" type="checkbox" checked></label></section>
+                <section class="settings-page" data-settings-page="behavior"><h3>Behavior</h3><label class="setting-row"><span><strong>Send with Enter</strong><small>Use Shift + Enter for a new line</small></span><input id="sendWithEnterToggle" type="checkbox" checked></label><label class="setting-row"><span><strong>Auto-scroll replies</strong><small>Stay at the latest response while streaming</small></span><input id="autoScrollToggle" type="checkbox" checked></label></section>
+                <section class="settings-page" data-settings-page="customize"><h3>Customize</h3><p class="settings-intro">Your charcoal and gold theme remains the foundation.</p><label class="profile-label" for="responseWidthSelect">Response width</label><select id="responseWidthSelect" class="profile-input"><option value="760px">Comfortable</option><option value="900px" selected>Balanced</option><option value="1080px">Wide</option></select><label class="setting-row"><span><strong>Show assistant actions</strong><small>Copy, rate, retry, and download replies</small></span><input id="responseActionsToggle" type="checkbox" checked></label></section>
+                <section class="settings-page" data-settings-page="data"><h3>Data controls</h3><p class="settings-intro">Manage the conversation that is currently open.</p><button id="clearChatBtn" class="panel-action danger-action" type="button"><i class="fa-solid fa-broom"></i> Clear current chat</button></section>
+            </div>
+        </div>
+    </dialog>
+
+    <div id="profilePanel" class="side-panel" aria-hidden="true">
+        <div class="panel-header"><h2>Your profile</h2><button class="panel-close" type="button" aria-label="Close"><i class="fa-solid fa-xmark"></i></button></div>
+        <section class="profile-summary"><span class="profile-avatar profile-avatar-large" id="profileAvatarLarge">P</span><div><strong id="profileNameLarge">Pixel user</strong><small id="profileEmailLarge">Manage account</small></div></section>
+        <section class="panel-section"><h3>Profile</h3><label class="profile-label" for="displayNameInput">Display name</label><input id="displayNameInput" class="profile-input" maxlength="32" placeholder="Your name"><button id="saveProfileBtn" class="panel-action primary-action" type="button">Save profile</button></section>
+        <section class="panel-section"><button id="logoutBtn" class="panel-action" type="button"><i class="fa-solid fa-arrow-right-from-bracket"></i> Sign out</button></section>
+    </div>
+
+    <div id="chatContextMenu" class="chat-context-menu" role="menu">
+        <button type="button" data-chat-action="rename"><i class="fa-solid fa-pen"></i> Rename</button>
+        <button type="button" data-chat-action="pin"><i class="fa-solid fa-thumbtack"></i> Pin</button>
+        <button type="button" data-chat-action="delete" class="danger-action"><i class="fa-solid fa-trash"></i> Delete</button>
     </div>
 
     <!-- ===================== -->
@@ -332,6 +315,8 @@ href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/atom-on
 
     
     <script src="js/sidebar.js"></script>
+
+    <script src="js/ui.js"></script>
 
     <script src="js/codeblock.js"></script>
 

@@ -160,7 +160,9 @@ async function loadConversations() {
 
         );
 
-    data.forEach(conversation => {
+    data
+    .sort((a, b) => Number(isPinnedConversation(b.id)) - Number(isPinnedConversation(a.id)))
+    .forEach(conversation => {
 
         const group =
             getGroup(conversation.created_at);
@@ -171,6 +173,13 @@ async function loadConversations() {
         item.className =
             "conversation-item";
 
+        item.dataset.conversationId = conversation.id;
+        item.dataset.conversationTitle = conversation.title;
+
+        if (isPinnedConversation(conversation.id)) {
+            item.classList.add("pinned");
+        }
+
         if (
             conversation.id ==
             currentConversation
@@ -180,17 +189,10 @@ async function loadConversations() {
 
         }
 
-        item.innerHTML = `
-
-            <span class="chat-name">
-
-                ${conversation.title}
-
-            </span>
-
-            <i class="fa-solid fa-ellipsis chat-options"></i>
-
-        `;
+        const title = document.createElement("span");
+        title.className = "chat-name";
+        title.textContent = conversation.title;
+        item.appendChild(title);
 
         item.onclick = () => {
 
@@ -440,3 +442,8 @@ window.addEventListener("load",async()=>{
     }
 
 });
+
+function isPinnedConversation(conversationId) {
+    return JSON.parse(localStorage.getItem("pixel-pinned-chats") || "[]")
+        .includes(conversationId);
+}
