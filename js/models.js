@@ -8,7 +8,7 @@ const MODELS = {
 
     auto: {
         id: "qwen/qwen3.6-27b",
-        name: "Auto",
+        name: "Default",
         icon: "✨"
     },
 
