@@ -13,14 +13,14 @@ const MODELS = {
     },
 
     llama: {
-        id: "llama-3.3-70b-versatile",
-        name: "Llama 3.3 70B",
+        id: "meta-llama/llama-prompt-guard-2-22m",
+        name: "Llama ",
         icon: "💬"
     },
 
 
     qwen: {
-        id: "qwen/qwen3-32b",
+        id: "qwen/qwen3.6-27b",
         name: "Qwen Coder",
         icon: "💻"
     },
