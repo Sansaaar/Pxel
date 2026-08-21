@@ -7,7 +7,7 @@ console.log("models.js loaded");
 const MODELS = {
 
     auto: {
-        id: "auto",
+        id: "qwen/qwen3.6-27b",
         name: "Auto",
         icon: "✨"
     },
