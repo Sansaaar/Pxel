@@ -62,10 +62,31 @@
     };
 
     // --- Code block with header, language tag, copy button, and line numbers ---
+    function isMathSource(source) {
+        return /\\(?:frac|dfrac|tfrac|sqrt|sum|int|lim|to|left|right|text|mathrm|mathbf|operatorname|begin|end|times|cdot|div|pm|ne|neq|lt|gt|le|leq|ge|geq|approx|equiv|pi|infty|alpha|beta|Delta|theta|lambda|mu|sigma|omega|rightarrow)|(?:\^|_)\{[^}]+\}|\^[0-9]/.test(source);
+    }
+
+    function isDisplayMathSource(source) {
+        return /\n|\\begin\s*\{(?:cases|aligned|gathered|matrix|pmatrix|bmatrix|array)\}/.test(source);
+    }
+
+    function escapeMath(source) {
+        return md.utils.escapeHtml(String(source)
+            .replace(/&amp;/g, "&")
+            .replace(/&lt;/g, "<")
+            .replace(/&gt;/g, ">")
+            .replace(/\\lt\b/g, "<")
+            .replace(/\\gt\b/g, ">"));
+    }
+
     md.renderer.rules.fence = function (tokens, idx) {
         const token = tokens[idx];
         const langRaw = (token.info || '').trim().split(/\s+/)[0];
         const lang = langRaw.toLowerCase();
+        const isMathFence = ["math", "latex", "tex"].includes(lang) || (!lang && isMathSource(token.content));
+        if (isMathFence) {
+            return `<div class="math-block">\\[${escapeMath(token.content.trim())}\\]</div>`;
+        }
         const label = lang || 'code';
         const escapedLabel = md.utils.escapeHtml(label);
 
@@ -105,34 +126,96 @@
         </div>`;
     };
 
-    // --- Inline code styling ---
-    const defaultCodeInline = md.renderer.rules.code_inline || function (tokens, idx, options, env, self) {
-        return self.renderToken(tokens, idx, options);
-    };
-    md.renderer.rules.code_inline = function (tokens, idx) {
-        const content = md.utils.escapeHtml(tokens[idx].content);
-        return `<code class="inline-code">${content}</code>`;
-    };
-
-    // --- Simple LaTeX / math support ($...$ and $$...$$) ---
-    function renderMath(text) {
-        // Block math: $$...$$
-        text = text.replace(/\$\$([\s\S]+?)\$\$/g, function (_, math) {
-            return `<div class="math-block">${md.utils.escapeHtml(math.trim())}</div>`;
-        });
-        // Inline math: $...$
-        text = text.replace(/\$([^\$\n]+?)\$/g, function (_, math) {
-            return `<span class="math-inline">${md.utils.escapeHtml(math.trim())}</span>`;
-        });
-        return text;
+    const pendingMathTypesets = new Set();
+    function typesetMath(element) {
+        if (!element) return;
+        if (window.MathJax?.typesetPromise) {
+            pendingMathTypesets.delete(element);
+            window.MathJax.typesetPromise([element]).catch(err => {
+                console.warn("[Pixel Math] Typesetting failed:", err);
+            });
+        } else {
+            pendingMathTypesets.add(element);
+        }
     }
+
+    function clearMathTypesetting(element) {
+        if (!element) return;
+        pendingMathTypesets.delete(element);
+        window.MathJax?.typesetClear?.([element]);
+    }
+
+    window.addEventListener("pixel-mathjax-ready", () => {
+        pendingMathTypesets.forEach(element => {
+            if (element.isConnected) typesetMath(element);
+            else pendingMathTypesets.delete(element);
+        });
+    }, { once: true });
+
+    window.typesetMath = typesetMath;
+    window.clearMathTypesetting = clearMathTypesetting;
+
+    // --- Main format function ---
+    function protectMath(source) {
+        const expressions = [];
+        const pattern = /(```[\s\S]*?```|~~~[\s\S]*?~~~|`+[^`\n]*`+)|(\$\$[\s\S]+?\$\$|\\\[[\s\S]+?\\\]|\\\([\s\S]+?\\\)|\$[^$\n]+?\$)/g;
+        const protectedText = source.replace(pattern, (match, code, expression) => {
+            if (code) return code;
+            const display = expression.startsWith("$$") || expression.startsWith("\\[");
+            const body = display
+                ? expression.slice(2, -2)
+                : expression.startsWith("\\(")
+                    ? expression.slice(2, -2)
+                    : expression.slice(1, -1);
+            const marker = `PIXELMATHPLACEHOLDER${expressions.length}END`;
+            expressions.push({ marker, body, display });
+            return marker;
+        });
+        return { protectedText, expressions };
+    }
+
+    function restoreMath(html, expressions) {
+        expressions.forEach(({ marker, body, display }) => {
+            const delimiters = display ? ["\\[", "\\]"] : ["\\(", "\\)"];
+            const wrapper = display ? "div" : "span";
+            const className = display ? "math-block" : "math-inline";
+            html = html.replaceAll(marker,
+                `<${wrapper} class="${className}">${delimiters[0]}${escapeMath(body.trim())}${delimiters[1]}</${wrapper}>`
+            );
+        });
+        return html;
+    }
+
+    function isMathCode(source) {
+        return /^\s*(?:\$[\s\S]+\$|\\\([\s\S]+\\\)|\\\[[\s\S]+\\\])\s*$/.test(source) ||
+            isMathSource(source);
+    }
+
+    // Math-like inline code is common in model output; render it as TeX, not code.
+    const previousCodeInline = md.renderer.rules.code_inline;
+    md.renderer.rules.code_inline = function (tokens, idx) {
+        const source = tokens[idx].content;
+        if (isMathCode(source)) {
+            let math = source.trim();
+            if (math.startsWith("$$") && math.endsWith("$$")) math = math.slice(2, -2);
+            else if (math.startsWith("$") && math.endsWith("$")) math = math.slice(1, -1);
+            else if (math.startsWith("\\(") && math.endsWith("\\)")) math = math.slice(2, -2);
+            else if (math.startsWith("\\[") && math.endsWith("\\]")) math = math.slice(2, -2);
+            const display = isDisplayMathSource(math);
+            const tag = "span";
+            const className = display ? "math-block" : "math-inline";
+            const delimiters = display ? ["\\[", "\\]"] : ["\\(", "\\)"];
+            return `<${tag} class="${className}">${delimiters[0]}${escapeMath(math.trim())}${delimiters[1]}</${tag}>`;
+        }
+        if (previousCodeInline) return previousCodeInline(tokens, idx);
+        return `<code class="inline-code">${md.utils.escapeHtml(source)}</code>`;
+    };
 
     // --- Main format function ---
     function formatMessage(text) {
         if (!text) return '';
-        let html = md.render(text);
-        html = renderMath(html);
-        return html;
+        const { protectedText, expressions } = protectMath(String(text));
+        return restoreMath(md.render(protectedText), expressions);
     }
 
     // Expose globally

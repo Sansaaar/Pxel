@@ -607,6 +607,7 @@
             return;
         }
 
+        window.clearMathTypesetting?.(messagesArea);
         messagesArea.innerHTML = "";
         let lastDateStr = null;
 
@@ -626,6 +627,7 @@
 
     function renderEmptyState(msg) {
         if (!messagesArea) return;
+        window.clearMathTypesetting?.(messagesArea);
         messagesArea.innerHTML = `
             <div class="chat-empty-state">
                 <div class="chat-empty-state-icon">
@@ -811,10 +813,10 @@
         let attachHtml = "";
         if (Array.isArray(msg.attachments) && msg.attachments.length > 0) {
             attachHtml = `<div class="chat-msg-attachments-wrap">`;
-            msg.attachments.forEach(a => {
+            msg.attachments.forEach((a, attachmentIndex) => {
                 if (a.type && a.type.startsWith("image/")) {
                     const directUrl = typeof a.url === "string" && a.url.startsWith("data:") ? a.url : "";
-                    attachHtml += `<img class="chat-msg-img-attachment" src="${esc(directUrl)}" data-attachment-path="${esc(a.path || "")}" alt="${esc(a.name || "Image attachment")}"/>`;
+                    attachHtml += `<img class="chat-msg-img-attachment" src="${esc(directUrl)}" data-attachment-index="${attachmentIndex}" alt="${esc(a.name || "Image attachment")}"/>`;
                 } else {
                     attachHtml += `<a class="chat-msg-file-attachment" href="${esc(a.url)}" target="_blank" download="${esc(a.name)}"><i class="fa-solid fa-paperclip"></i> ${esc(a.name || "Attachment")}</a>`;
                 }
@@ -931,8 +933,9 @@
         });
 
         messagesArea.appendChild(row);
+        window.typesetMath?.(row.querySelector(".chat-msg-bubble"));
         row.querySelectorAll(".chat-msg-img-attachment").forEach((img, index) => {
-            const attachment = msg.attachments[index];
+            const attachment = msg.attachments[Number(img.dataset.attachmentIndex)] || msg.attachments[index];
             img.addEventListener("click", () => {
                 if (!img.getAttribute("src")) return;
                 if (window.openArtworkViewer) window.openArtworkViewer(img.src, attachment?.name || "Image attachment");

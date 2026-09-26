@@ -259,7 +259,10 @@
 
         const chatArea = document.getElementById("chatArea");
         const welcome = document.querySelector(".welcome");
-        if (chatArea) chatArea.innerHTML = "";
+        if (chatArea) {
+            window.clearMathTypesetting?.(chatArea);
+            chatArea.innerHTML = "";
+        }
         if (welcome) welcome.classList.add("hide");
 
         let messages = [];
@@ -312,7 +315,10 @@
         const welcome = document.querySelector(".welcome");
         const textarea = document.getElementById("promptInput");
 
-        if (chatArea) chatArea.innerHTML = "";
+        if (chatArea) {
+            window.clearMathTypesetting?.(chatArea);
+            chatArea.innerHTML = "";
+        }
         if (welcome) welcome.classList.remove("hide");
         if (textarea) {
             textarea.value = "";

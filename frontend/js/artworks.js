@@ -50,8 +50,12 @@
         `;
 
         try {
-            const res = await fetch("/artworks.json", { cache: "no-cache" });
-            if (!res.ok) throw new Error(`Artwork manifest request failed (${res.status})`);
+            const apiBase = (window.API_BASE || "").replace(/\/$/, "");
+            let res = await fetch(`${apiBase}/artworks.json`, { cache: "no-cache" });
+            if (!res.ok) {
+                res = await fetch(`${apiBase}/api/artworks`, { cache: "no-cache" });
+            }
+            if (!res.ok) throw new Error(`Artwork list request failed (${res.status})`);
             const data = await res.json();
 
             if (Array.isArray(data.artworks)) {
@@ -62,7 +66,7 @@
                         return {
                             id: `art-${index + 1}-${filename}`,
                             filename,
-                            url: `/artworks/${encodeURIComponent(filename)}`,
+                            url: `${apiBase}/artworks/${encodeURIComponent(filename)}`,
                             title: typeof item.title === "string" && item.title.trim() ? item.title : filename,
                             description: item.description || null,
                             category: item.category || null,

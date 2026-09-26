@@ -110,6 +110,7 @@
                 contentEl.innerHTML = typeof window.formatMessage === "function"
                     ? window.formatMessage(text || "")
                     : escapeHtml(text || "");
+                window.typesetMath?.(contentEl);
             }
         } else {
             let attachmentsHtml = "";
@@ -346,6 +347,7 @@
             contentEl.innerHTML = typeof window.formatMessage === "function"
                 ? window.formatMessage(fullText)
                 : escapeHtml(fullText);
+            window.typesetMath?.(contentEl);
             contentEl.classList.remove("stream");
             scrollToLatest();
 
@@ -368,6 +370,7 @@
                     latestAiMsg.innerHTML = typeof window.formatMessage === "function"
                         ? window.formatMessage(raw + "\n\n*(Stopped)*")
                         : escapeHtml(raw);
+                    window.typesetMath?.(latestAiMsg);
                 }
             } else if (!navigator.onLine) {
                 renderErrorState("network", "", text);
