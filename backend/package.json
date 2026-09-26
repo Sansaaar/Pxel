@@ -4,9 +4,7 @@
   "description": "Backend for Pixel AI",
   "main": "server.js",
   "scripts": {
-    "prestart": "node ../scripts/generate-artworks-manifest.js",
     "start": "node server.js",
-    "predev": "node ../scripts/generate-artworks-manifest.js",
     "dev": "node server.js"
   },
   "author": "",
