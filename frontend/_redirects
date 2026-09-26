@@ -1,0 +1,5 @@
+/workspace/whiteboard/ /workspace/whiteboard 301
+/workspace/whiteboard /index.html 200
+/workspace/ /workspace 301
+/workspace /index.html 200
+/workspace/* /index.html 200

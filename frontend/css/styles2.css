@@ -732,6 +732,104 @@ button {
     color: var(--text);
 }
 
+.sidebar-more-toggle {
+    width: 100%;
+    border: 0;
+    background: transparent;
+    text-align: left;
+    cursor: pointer;
+}
+
+.sidebar-more-toggle:focus-visible,
+.sidebar-more-item:focus-visible {
+    outline: 2px solid var(--gold);
+    outline-offset: 2px;
+}
+
+.sidebar-more-chevron {
+    width: 12px;
+    color: var(--text-muted);
+    text-align: center;
+    transition: transform var(--ease), color var(--ease);
+}
+
+.sidebar-more-section.is-open .sidebar-more-chevron {
+    transform: rotate(90deg);
+    color: var(--gold);
+}
+
+.sidebar-more-menu {
+    display: grid;
+    grid-template-rows: 0fr;
+    margin-top: 0;
+    opacity: 0;
+    overflow: hidden;
+    pointer-events: none;
+    transition: grid-template-rows var(--ease), margin-top var(--ease), opacity var(--ease);
+}
+
+.sidebar-more-section.is-open .sidebar-more-menu {
+    grid-template-rows: 1fr;
+    margin-top: 3px;
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.sidebar-more-menu-inner {
+    display: flex;
+    min-height: 0;
+    flex-direction: column;
+    gap: 2px;
+    overflow: hidden;
+}
+
+.sidebar-more-item {
+    display: flex;
+    width: 100%;
+    min-height: 32px;
+    align-items: center;
+    gap: 9px;
+    padding: 6px 9px 6px 31px;
+    border: 0;
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--text-secondary);
+    font-size: 12px;
+    text-align: left;
+    transition: background var(--ease), color var(--ease), opacity var(--ease);
+}
+
+.sidebar-more-item i {
+    width: 14px;
+    color: var(--text-muted);
+    text-align: center;
+}
+
+.sidebar-more-item:not(:disabled) {
+    cursor: pointer;
+}
+
+.sidebar-more-item:not(:disabled):hover {
+    background: var(--surface-hover);
+    color: var(--text);
+}
+
+.sidebar-more-item:not(:disabled):hover i {
+    color: var(--gold);
+}
+
+.sidebar-more-item:disabled {
+    cursor: not-allowed;
+    opacity: .68;
+}
+
+.sidebar-more-item small {
+    margin-left: auto;
+    color: var(--text-muted);
+    font-size: 9px;
+    white-space: nowrap;
+}
+
 .profile-card {
     border-top: 1px solid var(--border);
     padding-top: 8px;

@@ -3,6 +3,21 @@
 // ==========================================
 
 const client = window.supabaseClient;
+const authNavigation = window.pixelAuthNavigation;
+
+function redirectToLogin(extraParams = {}) {
+    const returnTo = authNavigation?.currentAppPath() || "/";
+    window.location.replace(authNavigation?.loginUrl(returnTo, extraParams) || "login.html");
+}
+
+function finishAuthRedirect() {
+    const returnTo = authNavigation?.requestedReturnTo();
+    if (returnTo && returnTo !== authNavigation.currentAppPath()) {
+        window.location.replace(returnTo);
+        return true;
+    }
+    return false;
+}
 
 function setCurrentUser(user) {
     window.currentUser = user;
@@ -21,7 +36,7 @@ async function checkSession() {
             if (localStorage.getItem("pixel-guest") === "true") {
                 setCurrentUser(guestUser());
             } else {
-                window.location.replace("login.html");
+                redirectToLogin();
             }
             return;
         }
@@ -34,6 +49,7 @@ async function checkSession() {
             setCurrentUser(data.session.user);
             localStorage.removeItem("pixel-guest");
             console.log("[Pixel Auth] Active session restored.");
+            finishAuthRedirect();
             return;
         }
 
@@ -42,18 +58,19 @@ async function checkSession() {
         if (isGuest) {
             setCurrentUser(guestUser());
             console.log("[Pixel Auth] Running in Guest mode.");
+            finishAuthRedirect();
             return;
         }
 
         // Otherwise redirect to login
-        window.location.href = "login.html";
+        redirectToLogin();
 
     } catch (err) {
         console.error("[Pixel Auth] Unexpected error during session check:", err);
         if (localStorage.getItem("pixel-guest") === "true") {
             setCurrentUser(guestUser());
         } else {
-            window.location.replace("login.html?session=unavailable");
+            redirectToLogin({ session: "unavailable" });
         }
     }
 }
@@ -69,7 +86,7 @@ client?.auth.onAuthStateChange((event, session) => {
         setCurrentUser(guestMode ? guestUser() : null);
         if (!guestMode) {
             document.body?.classList.add("auth-pending");
-            window.location.replace("login.html");
+            redirectToLogin();
         }
     }
 });

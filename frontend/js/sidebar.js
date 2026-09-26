@@ -1,12 +1,23 @@
 // ==========================================
 // Pixel AI 2.0: Sidebar & Mobile Drawer Manager
-// Handles view switching (AI Chat, Artworks, User Chat)
+// Handles view switching (AI Chat, Artworks, User Chat, Workspace)
 // ==========================================
 
 (function() {
     const sidebar = document.getElementById("sidebar");
     const overlay = document.getElementById("sidebarOverlay");
     const searchInput = document.getElementById("sidebarSearchInput");
+
+    function isWorkspacePath(pathname = window.location.pathname) {
+        return pathname === "/workspace" || pathname.startsWith("/workspace/");
+    }
+
+    function routeForLocation() {
+        if (isWorkspacePath()) return "workspace";
+        if (window.location.hash === "#artworks") return "artworks";
+        if (window.location.hash === "#chat") return "userChat";
+        return "aiChat";
+    }
 
     function isMobile() {
         return window.innerWidth <= 840;
@@ -37,19 +48,40 @@
         }
     }
 
-    function switchView(targetView) {
+    function switchView(targetView, options = {}) {
         const aiView = document.getElementById("aiChatView");
         const artworksView = document.getElementById("artworksView");
         const userChatView = document.getElementById("userChatView");
+        const workspaceView = document.getElementById("workspaceView");
+        const workspaceBtn = document.getElementById("workspaceBtn");
 
         if (aiView) aiView.classList.toggle("active", targetView === "aiChat");
         if (artworksView) artworksView.classList.toggle("active", targetView === "artworks");
         if (userChatView) userChatView.classList.toggle("active", targetView === "userChat");
+        if (workspaceView) workspaceView.classList.toggle("active", targetView === "workspace");
+        if (workspaceBtn) {
+            workspaceBtn.classList.toggle("is-active", targetView === "workspace");
+            if (targetView === "workspace") workspaceBtn.setAttribute("aria-current", "page");
+            else workspaceBtn.removeAttribute("aria-current");
+        }
+
+        if (options.syncLocation !== false) {
+            const currentPath = window.location.pathname;
+            if (targetView === "workspace" && !isWorkspacePath(currentPath)) {
+                window.history.pushState({ pixelView: "workspace" }, "", "/workspace");
+            } else if (targetView !== "workspace" && isWorkspacePath(currentPath)) {
+                const destination = targetView === "artworks" ? "/#artworks"
+                    : targetView === "userChat" ? "/#chat" : "/";
+                window.history.pushState({ pixelView: targetView }, "", destination);
+            }
+        }
 
         if (targetView === "artworks" && typeof window.loadArtworksGallery === "function") {
             window.loadArtworksGallery();
         } else if (targetView === "userChat" && typeof window.loadUserChatSystem === "function") {
             window.loadUserChatSystem();
+        } else if (targetView === "workspace") {
+            window.loadWorkspaceRecent?.();
         }
 
         if (isMobile()) {
@@ -88,6 +120,11 @@
         const artworksBtn = document.getElementById("artworksBtn");
         const userChatBtn = document.getElementById("userChatBtn");
         const creatorBtn = document.getElementById("creatorBtn");
+        const workspaceBtn = document.getElementById("workspaceBtn");
+        const moreSection = document.getElementById("sidebarMoreSection");
+        const moreToggleBtn = document.getElementById("moreToggleBtn");
+        const moreMenu = document.getElementById("sidebarMoreMenu");
+        const moreDataBtn = document.getElementById("moreDataBtn");
 
         if (newChatBtn) {
             newChatBtn.addEventListener("click", () => {
@@ -122,6 +159,29 @@
         if (creatorBtn) {
             creatorBtn.addEventListener("click", () => {
                 window.location.href = "creator.html";
+            });
+        }
+
+        workspaceBtn?.addEventListener("click", () => switchView("workspace"));
+
+        if (moreToggleBtn && moreSection && moreMenu) {
+            moreToggleBtn.addEventListener("click", () => {
+                const expanded = moreToggleBtn.getAttribute("aria-expanded") !== "true";
+                moreToggleBtn.setAttribute("aria-expanded", String(expanded));
+                moreMenu.setAttribute("aria-hidden", String(!expanded));
+                moreMenu.inert = !expanded;
+                moreMenu.querySelectorAll(".sidebar-more-item:not(:disabled)").forEach(item => {
+                    item.tabIndex = expanded ? 0 : -1;
+                });
+                moreSection.classList.toggle("is-open", expanded);
+            });
+        }
+
+        if (moreDataBtn) {
+            moreDataBtn.addEventListener("click", () => {
+                if (isMobile()) closeSidebar();
+                window.openPixelSettings?.();
+                document.querySelector('[data-settings-tab="data"]')?.click();
             });
         }
 
@@ -186,12 +246,10 @@
             }
         });
 
-        // URL hash check or default
-        if (window.location.hash === "#artworks") {
-            switchView("artworks");
-        } else if (window.location.hash === "#chat") {
-            switchView("userChat");
-        }
+        switchView(routeForLocation(), { syncLocation: false });
+        window.addEventListener("popstate", () => {
+            switchView(routeForLocation(), { syncLocation: false });
+        });
     });
 
     window.openSidebar = openSidebar;

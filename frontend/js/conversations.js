@@ -5,6 +5,7 @@
 (function() {
     let currentConversation = localStorage.getItem("currentConversation") || null;
     let localConversations = [];
+    let displayedConversations = [];
     let localMessages = {};
 
     function generateUUID() {
@@ -185,6 +186,10 @@
             if (aPinned !== bPinned) return bPinned - aPinned;
             return new Date(b.created_at || 0) - new Date(a.created_at || 0);
         });
+        displayedConversations = convs;
+        if (document.getElementById("workspaceView")?.classList.contains("active")) {
+            window.loadWorkspaceRecent?.();
+        }
 
         convs.forEach(conv => {
             const groupName = getGroup(conv.created_at);
@@ -533,4 +538,15 @@
     window.clearConversationMessages = clearConversationMessages;
     window.getCurrentConversationId = () => currentConversation;
     window.setCurrentConversationId = (id) => { currentConversation = id; };
+    window.getPixelRecentConversations = () => displayedConversations
+        .slice()
+        .sort((a, b) => Date.parse(b.updated_at || b.created_at || "") - Date.parse(a.updated_at || a.created_at || ""))
+        .slice(0, 8)
+        .map(conversation => ({ ...conversation }));
+    window.openPixelConversation = (id) => {
+        const conversation = displayedConversations.find(item => item.id === id);
+        if (!conversation) return false;
+        selectConversation(conversation.id, conversation.title);
+        return true;
+    };
 })();

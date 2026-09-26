@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <base href="/">
     <title>Pixel AI — Personal AI Workspace</title>
 
     <!-- Meta branding -->
@@ -12,6 +13,8 @@
 
     <!-- Stylesheets -->
     <link rel="stylesheet" href="css/styles2.css">
+    <link rel="stylesheet" href="css/whiteboard.css">
+    <link rel="stylesheet" href="css/workspace.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/atom-one-dark.min.css">
 
     <!-- Fonts -->
@@ -66,7 +69,7 @@
         <!-- ========================================== -->
         <!-- Sidebar Navigation Drawer                  -->
         <!-- ========================================== -->
-        <aside class="sidebar expanded" id="sidebar" aria-label="Conversation navigation">
+        <aside class="sidebar expanded" id="sidebar" aria-label="Pixel navigation">
             <div class="sidebar-header">
                 <div class="sidebar-brand">
                     <div class="sidebar-logo">
@@ -142,6 +145,51 @@
                     <i class="fa-solid fa-sliders"></i>
                     <span>Settings</span>
                 </button>
+
+                <button id="workspaceBtn" class="sidebar-footer-btn workspace-nav-btn" type="button" title="Open Workspace" aria-current="false">
+                    <i class="fa-solid fa-layer-group" aria-hidden="true"></i>
+                    <span>Workspace</span>
+                </button>
+
+                <button id="whiteboardBtn" class="sidebar-footer-btn whiteboard-nav-btn" type="button" title="Open Whiteboard">
+                    <i class="fa-solid fa-pen-ruler" aria-hidden="true"></i>
+                    <span>Whiteboard</span>
+                </button>
+
+                <div class="sidebar-more-section" id="sidebarMoreSection">
+                    <button id="moreToggleBtn" class="sidebar-footer-btn sidebar-more-toggle" type="button" aria-expanded="false" aria-controls="sidebarMoreMenu" title="Show more Pixel tools">
+                        <i class="fa-solid fa-chevron-right sidebar-more-chevron" aria-hidden="true"></i>
+                        <span>More</span>
+                    </button>
+                    <div id="sidebarMoreMenu" class="sidebar-more-menu" aria-hidden="true" inert>
+                        <div class="sidebar-more-menu-inner">
+                            <button class="sidebar-more-item" type="button" disabled title="Notes — coming soon">
+                                <i class="fa-regular fa-note-sticky" aria-hidden="true"></i>
+                                <span>Notes</span>
+                                <small>Coming soon</small>
+                            </button>
+                            <button class="sidebar-more-item" type="button" disabled title="Research — coming soon">
+                                <i class="fa-solid fa-magnifying-glass-chart" aria-hidden="true"></i>
+                                <span>Research</span>
+                                <small>Coming soon</small>
+                            </button>
+                            <button class="sidebar-more-item" type="button" disabled title="Code — coming soon">
+                                <i class="fa-solid fa-code" aria-hidden="true"></i>
+                                <span>Code</span>
+                                <small>Coming soon</small>
+                            </button>
+                            <button class="sidebar-more-item" type="button" disabled title="Image Studio — coming soon">
+                                <i class="fa-regular fa-image" aria-hidden="true"></i>
+                                <span>Image Studio</span>
+                                <small>Coming soon</small>
+                            </button>
+                            <button id="moreDataBtn" class="sidebar-more-item" type="button" tabindex="-1" title="Open Data &amp; Privacy settings">
+                                <i class="fa-solid fa-database" aria-hidden="true"></i>
+                                <span>Data</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
 
                 <div class="profile-card">
                     <button id="profileBtn" class="profile-button open-settings-trigger" type="button" title="Account profile">
@@ -517,8 +565,259 @@
                 </div>
             </div>
 
+            <!-- VIEW 4: Workspace Hub -->
+            <section id="workspaceView" class="app-view-panel workspace-view" aria-labelledby="workspaceHeading">
+                <header class="workspace-topbar">
+                    <div class="workspace-topbar-start">
+                        <button class="topbar-btn sidebar-toggle-btn" type="button" aria-label="Toggle sidebar" title="Toggle navigation">
+                            <i class="fa-solid fa-bars" aria-hidden="true"></i>
+                        </button>
+                        <span class="workspace-topbar-label">Pixel Workspace</span>
+                    </div>
+                    <div class="workspace-new-wrap">
+                        <button id="workspaceNewBtn" class="workspace-new-btn" type="button" aria-expanded="false" aria-controls="workspaceNewMenu">
+                            <i class="fa-solid fa-plus" aria-hidden="true"></i>
+                            <span>New</span>
+                            <i class="fa-solid fa-chevron-down workspace-new-chevron" aria-hidden="true"></i>
+                        </button>
+                        <div id="workspaceNewMenu" class="workspace-new-menu" hidden>
+                            <button class="workspace-new-menu-item" type="button" data-workspace-action="new-chat">
+                                <i class="fa-regular fa-message" aria-hidden="true"></i><span>New Chat</span>
+                            </button>
+                            <button class="workspace-new-menu-item" type="button" data-workspace-action="new-whiteboard">
+                                <i class="fa-solid fa-pen-ruler" aria-hidden="true"></i><span>New Whiteboard</span>
+                            </button>
+                        </div>
+                    </div>
+                </header>
+
+                <div class="workspace-scroll">
+                    <div class="workspace-content">
+                        <header class="workspace-intro">
+                            <p class="workspace-eyebrow">PIXEL / YOUR SPACE</p>
+                            <h1 id="workspaceHeading">Workspace</h1>
+                            <p>Your tools, projects and creative workspace.</p>
+                        </header>
+
+                        <section class="workspace-category" aria-labelledby="workspaceThinkHeading">
+                            <div class="workspace-section-heading"><h2 id="workspaceThinkHeading">Think</h2><span>01</span></div>
+                            <div id="workspaceThinkGrid" class="workspace-tool-grid"></div>
+                        </section>
+
+                        <section class="workspace-category" aria-labelledby="workspaceCreateHeading">
+                            <div class="workspace-section-heading"><h2 id="workspaceCreateHeading">Create</h2><span>02</span></div>
+                            <div id="workspaceCreateGrid" class="workspace-tool-grid"></div>
+                        </section>
+
+                        <section class="workspace-category" aria-labelledby="workspaceWorkHeading">
+                            <div class="workspace-section-heading"><h2 id="workspaceWorkHeading">Work</h2><span>03</span></div>
+                            <div id="workspaceWorkGrid" class="workspace-tool-grid"></div>
+                        </section>
+
+                        <section class="workspace-category workspace-notes-category" aria-labelledby="workspaceNotesHeading">
+                            <div class="workspace-section-heading"><h2 id="workspaceNotesHeading">Notes</h2><span>04</span></div>
+                            <div id="workspaceNotesGrid" class="workspace-note-grid"></div>
+                        </section>
+
+                        <section class="workspace-recent" aria-labelledby="workspaceRecentHeading">
+                            <div class="workspace-section-heading"><h2 id="workspaceRecentHeading">Recent</h2><span>Activity</span></div>
+                            <div id="workspaceRecentList" class="workspace-recent-list" aria-live="polite">
+                                <p class="workspace-recent-empty">Recent chats and whiteboards will appear here.</p>
+                            </div>
+                        </section>
+                    </div>
+                </div>
+            </section>
+
         </main>
     </div>
+
+    <dialog id="whiteboardWorkspace" class="whiteboard-workspace" aria-label="Pixel Whiteboard">
+        <section id="whiteboardListView" class="whiteboard-list-view" aria-labelledby="whiteboardListHeading">
+            <header class="whiteboard-topbar">
+                <div class="whiteboard-topbar-brand">
+                    <img src="assets/pixel.png" alt="" width="30" height="30">
+                    <span>Pixel <b>Whiteboard</b></span>
+                </div>
+                <div class="whiteboard-topbar-actions">
+                    <span id="whiteboardSyncStatus" class="whiteboard-sync-status" role="status" aria-live="polite"></span>
+                    <button id="whiteboardCloseBtn" class="wb-icon-button" type="button" aria-label="Close whiteboard" title="Close whiteboard">
+                        <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+                    </button>
+                </div>
+            </header>
+
+            <div class="whiteboard-library">
+                <div class="whiteboard-library-heading">
+                    <div>
+                        <p class="whiteboard-eyebrow">YOUR CANVAS</p>
+                        <h1 id="whiteboardListHeading">Whiteboards</h1>
+                    </div>
+                    <button id="whiteboardNewBtn" class="wb-primary-button" type="button">
+                        <i class="fa-solid fa-plus" aria-hidden="true"></i><span>New whiteboard</span>
+                    </button>
+                </div>
+                <div class="whiteboard-library-controls">
+                    <label class="whiteboard-search">
+                        <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+                        <input id="whiteboardSearch" type="search" placeholder="Find a whiteboard" autocomplete="off">
+                    </label>
+                    <span id="whiteboardCount" class="whiteboard-count"></span>
+                </div>
+                <div id="whiteboardCards" class="whiteboard-cards" aria-live="polite"></div>
+            </div>
+        </section>
+
+        <section id="whiteboardEditorView" class="whiteboard-editor-view" aria-label="Whiteboard editor" hidden>
+            <header class="whiteboard-editor-header">
+                <div class="wb-editor-leading">
+                    <button id="whiteboardBackBtn" class="wb-icon-button" type="button" aria-label="Back to whiteboards" title="All whiteboards">
+                        <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
+                    </button>
+                    <img src="assets/pixel.png" alt="" width="28" height="28">
+                    <input id="whiteboardTitle" class="whiteboard-title-input" type="text" maxlength="80" aria-label="Whiteboard title">
+                    <span id="whiteboardEditorStatus" class="whiteboard-sync-status" role="status" aria-live="polite"></span>
+                </div>
+                <div class="wb-editor-actions">
+                    <button id="whiteboardAskBtn" class="wb-ask-button" type="button" title="Send this board to Pixel AI">
+                        <i class="fa-solid fa-sparkles" aria-hidden="true"></i><span>Ask Pixel</span>
+                    </button>
+                    <button id="whiteboardDeleteBtn" class="wb-icon-button wb-danger-button" type="button" aria-label="Delete whiteboard" title="Delete whiteboard">
+                        <i class="fa-regular fa-trash-can" aria-hidden="true"></i>
+                    </button>
+                    <button id="whiteboardEditorCloseBtn" class="wb-icon-button" type="button" aria-label="Close whiteboard" title="Close whiteboard">
+                        <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+                    </button>
+                </div>
+            </header>
+
+            <div class="whiteboard-canvas-shell">
+                <div id="whiteboardToolbar" class="whiteboard-toolbar" role="toolbar" aria-label="Whiteboard tools">
+                    <div class="wb-tool-group" aria-label="Navigation and drawing">
+                        <button class="wb-tool-button is-active" type="button" data-tool="select" aria-label="Select tool" aria-pressed="true" title="Select (V)"><i class="fa-solid fa-arrow-pointer" aria-hidden="true"></i></button>
+                        <button class="wb-tool-button" type="button" data-tool="hand" aria-label="Hand tool" aria-pressed="false" title="Pan (H or Space + drag)"><i class="fa-regular fa-hand" aria-hidden="true"></i></button>
+                        <span class="wb-tool-divider" aria-hidden="true"></span>
+                        <button class="wb-tool-button" type="button" data-tool="pen" aria-label="Pen" aria-pressed="false" title="Pen (P)"><i class="fa-solid fa-pen" aria-hidden="true"></i></button>
+                        <button class="wb-tool-button" type="button" data-tool="highlighter" aria-label="Highlighter" aria-pressed="false" title="Highlighter"><i class="fa-solid fa-highlighter" aria-hidden="true"></i></button>
+                        <button class="wb-tool-button" type="button" data-tool="eraser" aria-label="Eraser" aria-pressed="false" title="Eraser (E)"><i class="fa-solid fa-eraser" aria-hidden="true"></i></button>
+                        <span class="wb-tool-divider" aria-hidden="true"></span>
+                        <button class="wb-tool-button" type="button" data-tool="line" aria-label="Line" aria-pressed="false" title="Line"><i class="fa-solid fa-minus" aria-hidden="true"></i></button>
+                        <button class="wb-tool-button" type="button" data-tool="arrow" aria-label="Arrow" aria-pressed="false" title="Arrow"><i class="fa-solid fa-arrow-right-long" aria-hidden="true"></i></button>
+                        <button class="wb-tool-button" type="button" data-tool="rectangle" aria-label="Rectangle" aria-pressed="false" title="Rectangle"><i class="fa-regular fa-square" aria-hidden="true"></i></button>
+                        <button class="wb-tool-button" type="button" data-tool="ellipse" aria-label="Ellipse" aria-pressed="false" title="Ellipse"><i class="fa-regular fa-circle" aria-hidden="true"></i></button>
+                        <span class="wb-tool-divider" aria-hidden="true"></span>
+                        <button class="wb-tool-button" type="button" data-tool="text" aria-label="Text" aria-pressed="false" title="Text (T)"><i class="fa-solid fa-t" aria-hidden="true"></i></button>
+                        <button class="wb-tool-button" type="button" data-tool="sticky" aria-label="Sticky note" aria-pressed="false" title="Sticky note"><i class="fa-regular fa-note-sticky" aria-hidden="true"></i></button>
+                        <button id="whiteboardImageBtn" class="wb-tool-button" type="button" aria-label="Insert image" title="Insert image">
+                            <i class="fa-regular fa-image" aria-hidden="true"></i>
+                        </button>
+                        <input id="whiteboardImageInput" type="file" accept="image/png,image/jpeg,image/webp,image/gif" multiple hidden>
+                    </div>
+                    <span class="wb-tool-divider wb-toolbar-divider" aria-hidden="true"></span>
+                    <div class="wb-tool-group wb-history-group" aria-label="Edit history">
+                        <button id="whiteboardUndoBtn" class="wb-tool-button" type="button" aria-label="Undo" title="Undo (Ctrl+Z)" disabled><i class="fa-solid fa-rotate-left" aria-hidden="true"></i></button>
+                        <button id="whiteboardRedoBtn" class="wb-tool-button" type="button" aria-label="Redo" title="Redo (Ctrl+Shift+Z)" disabled><i class="fa-solid fa-rotate-right" aria-hidden="true"></i></button>
+                        <button id="whiteboardClearBtn" class="wb-tool-button wb-danger-button" type="button" aria-label="Clear canvas" title="Clear canvas"><i class="fa-regular fa-trash-can" aria-hidden="true"></i></button>
+                    </div>
+                    <label class="wb-stroke-control" title="Stroke color">
+                        <span class="sr-only">Stroke color</span>
+                        <input id="whiteboardColor" type="color" value="#d4af37" aria-label="Stroke color">
+                    </label>
+                    <label class="wb-width-control" title="Stroke width">
+                        <span class="sr-only">Stroke width</span>
+                        <input id="whiteboardWidth" type="range" min="1" max="12" value="3" aria-label="Stroke width">
+                    </label>
+                </div>
+
+                <div id="whiteboardStage" class="whiteboard-stage">
+                    <svg id="whiteboardSvg" class="whiteboard-svg" xmlns="http://www.w3.org/2000/svg" tabindex="0" role="application" aria-label="Infinite whiteboard canvas. Use the toolbar or keyboard shortcuts to draw and navigate.">
+                        <defs>
+                            <pattern id="whiteboardGrid" width="32" height="32" patternUnits="userSpaceOnUse">
+                                <circle cx="1" cy="1" r="1" fill="rgba(255,255,255,.12)"></circle>
+                            </pattern>
+                        </defs>
+                        <g id="whiteboardWorld">
+                            <rect x="-100000" y="-100000" width="200000" height="200000" fill="url(#whiteboardGrid)" pointer-events="none"></rect>
+                            <g id="whiteboardObjects"></g>
+                            <rect id="whiteboardMarquee" class="wb-marquee" hidden pointer-events="none"></rect>
+                            <g id="whiteboardSelection" pointer-events="none"></g>
+                        </g>
+                    </svg>
+                    <div id="whiteboardDropHint" class="whiteboard-drop-hint" hidden>
+                        <i class="fa-regular fa-image" aria-hidden="true"></i><span>Drop image to add it to the board</span>
+                    </div>
+                    <div class="whiteboard-zoom-controls" aria-label="Canvas zoom controls">
+                        <button id="whiteboardZoomOut" class="wb-icon-button" type="button" aria-label="Zoom out" title="Zoom out"><i class="fa-solid fa-minus" aria-hidden="true"></i></button>
+                        <button id="whiteboardZoomLabel" class="wb-zoom-label" type="button" title="Reset zoom">100%</button>
+                        <button id="whiteboardZoomIn" class="wb-icon-button" type="button" aria-label="Zoom in" title="Zoom in"><i class="fa-solid fa-plus" aria-hidden="true"></i></button>
+                        <span class="wb-tool-divider" aria-hidden="true"></span>
+                        <button id="whiteboardFitBtn" class="wb-icon-button" type="button" aria-label="Fit board to screen" title="Fit to screen"><i class="fa-solid fa-expand" aria-hidden="true"></i></button>
+                    </div>
+                    <p class="whiteboard-canvas-hint">Scroll to pan <span>·</span> Ctrl + scroll to zoom <span>·</span> Space + drag to pan</p>
+                </div>
+            </div>
+        </section>
+
+        <div id="whiteboardTextLayer" class="wb-dialog-layer" hidden>
+            <section class="wb-dialog-card" role="dialog" aria-modal="true" aria-labelledby="whiteboardTextHeading">
+                <div class="wb-dialog-header">
+                    <div><p class="whiteboard-eyebrow">CANVAS OBJECT</p><h2 id="whiteboardTextHeading">Edit text</h2></div>
+                    <button type="button" class="wb-icon-button" data-wb-close-dialog aria-label="Close text editor"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+                </div>
+                <label class="wb-dialog-label" for="whiteboardTextInput">Text</label>
+                <textarea id="whiteboardTextInput" rows="5" maxlength="4000" placeholder="Write something on your canvas..."></textarea>
+                <fieldset id="whiteboardNoteColors" class="wb-note-colors">
+                    <legend>Note color</legend>
+                    <label><input type="radio" name="whiteboardNoteColor" value="#d4af37" checked><span class="wb-color-swatch wb-color-gold"></span><span>Gold</span></label>
+                    <label><input type="radio" name="whiteboardNoteColor" value="#849b85"><span class="wb-color-swatch wb-color-sage"></span><span>Sage</span></label>
+                    <label><input type="radio" name="whiteboardNoteColor" value="#74839a"><span class="wb-color-swatch wb-color-slate"></span><span>Slate</span></label>
+                </fieldset>
+                <div class="wb-dialog-actions">
+                    <button type="button" class="wb-secondary-button" data-wb-close-dialog>Cancel</button>
+                    <button id="whiteboardTextSaveBtn" type="button" class="wb-primary-button">Save to board</button>
+                </div>
+            </section>
+        </div>
+
+        <div id="whiteboardAskLayer" class="wb-dialog-layer" hidden>
+            <section class="wb-dialog-card" role="dialog" aria-modal="true" aria-labelledby="whiteboardAskHeading">
+                <div class="wb-dialog-header">
+                    <div><p class="whiteboard-eyebrow">PIXEL AI</p><h2 id="whiteboardAskHeading">Ask Pixel about this board</h2></div>
+                    <button type="button" class="wb-icon-button" data-wb-close-dialog aria-label="Close Ask Pixel"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+                </div>
+                <p id="whiteboardAskContext" class="wb-dialog-copy"></p>
+                <label class="wb-dialog-label" for="whiteboardAskInput">What should Pixel do?</label>
+                <select id="whiteboardAskMode">
+                    <option value="Explain the selected board content clearly.">Explain</option>
+                    <option value="Summarize the selected board content into concise, organized points.">Summarize</option>
+                    <option value="Suggest thoughtful improvements to the selected board content.">Improve</option>
+                    <option value="Generate useful ideas based on the selected board content.">Generate ideas</option>
+                    <option value="Solve or analyze the diagram shown on the board step by step.">Analyze diagram</option>
+                    <option value="Turn the selected board content into a clear outline.">Create an outline</option>
+                </select>
+                <label class="wb-dialog-label" for="whiteboardAskInput">Add context <span>(optional)</span></label>
+                <textarea id="whiteboardAskInput" rows="3" maxlength="2000" placeholder="Add a question or a little more context..."></textarea>
+                <div class="wb-dialog-actions">
+                    <button type="button" class="wb-secondary-button" data-wb-close-dialog>Cancel</button>
+                    <button id="whiteboardAskSendBtn" type="button" class="wb-primary-button"><i class="fa-solid fa-arrow-up" aria-hidden="true"></i> Send to chat</button>
+                </div>
+            </section>
+        </div>
+
+        <div id="whiteboardConfirmLayer" class="wb-dialog-layer" hidden>
+            <section class="wb-dialog-card wb-confirm-card" role="dialog" aria-modal="true" aria-labelledby="whiteboardConfirmHeading">
+                <div class="wb-dialog-header">
+                    <div><p class="whiteboard-eyebrow">CONFIRM ACTION</p><h2 id="whiteboardConfirmHeading">Clear this canvas?</h2></div>
+                    <button type="button" class="wb-icon-button" data-wb-close-dialog aria-label="Cancel"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+                </div>
+                <p id="whiteboardConfirmCopy" class="wb-dialog-copy">This cannot be undone.</p>
+                <div class="wb-dialog-actions">
+                    <button type="button" class="wb-secondary-button" data-wb-close-dialog>Cancel</button>
+                    <button id="whiteboardConfirmAction" type="button" class="wb-primary-button wb-confirm-danger">Clear canvas</button>
+                </div>
+            </section>
+        </div>
+    </dialog>
 
     <!-- ========================================== -->
     <!-- Settings Dialog Modal                      -->
@@ -990,6 +1289,7 @@
     <!-- Supabase Auth & Storage -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="js/supabase.js"></script>
+    <script src="js/auth-navigation.js"></script>
     <script src="js/auth.js"></script>
 
     <!-- Application Components -->
@@ -1002,6 +1302,8 @@
     <script src="js/artworks.js"></script>
     <script src="js/userChat.js"></script>
     <script src="js/pixel-loader.js"></script>
+    <script src="js/whiteboard.js"></script>
+    <script src="js/workspace.js"></script>
 
 </body>
 </html>

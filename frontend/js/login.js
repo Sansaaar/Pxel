@@ -12,6 +12,22 @@ const passwordResetBtn = passwordResetForm?.querySelector(".login-btn");
 const googleBtn = document.getElementById("googleLogin");
 const guestBtn = document.getElementById("guestLogin");
 const errorBanner = document.getElementById("authError");
+const authNavigation = window.pixelAuthNavigation;
+
+function appAfterAuthUrl() {
+    return authNavigation?.destinationAfterAuth() || "/";
+}
+
+function preserveReturnToLinks() {
+    const returnTo = authNavigation?.requestedReturnTo();
+    if (!returnTo) return;
+    const signupLink = document.querySelector(".signup-text a");
+    if (signupLink) signupLink.href = authNavigation.authPageUrl("/signup.html", returnTo);
+    const forgotLink = document.querySelector('a[href$="forgot-password.html"]');
+    if (forgotLink) forgotLink.href = authNavigation.authPageUrl("/forgot-password.html", returnTo);
+}
+
+preserveReturnToLinks();
 
 function authErrorMessage(error, context = "login") {
     const detail = `${error?.status || ""} ${error?.code || ""} ${error?.message || ""}`.toLowerCase();
@@ -133,7 +149,7 @@ passwordResetForm?.addEventListener("submit", async event => {
         const { error } = await client.auth.updateUser({ password: nextPassword });
         if (error) throw error;
         finishButton(passwordResetBtn, "Password updated");
-        window.setTimeout(() => { window.location.href = "index.html"; }, 700);
+        window.setTimeout(() => { window.location.href = appAfterAuthUrl(); }, 700);
     } catch (error) {
         passwordResetPending = false;
         restoreButton(passwordResetBtn);
@@ -229,7 +245,7 @@ form?.addEventListener("submit", async event => {
         }
         form.setAttribute("aria-busy", "false");
         finishButton(loginBtn, "Signed in");
-        window.setTimeout(() => { window.location.href = "index.html"; }, 600);
+        window.setTimeout(() => { window.location.href = appAfterAuthUrl(); }, 600);
     } catch (error) {
         signInPending = false;
         form.removeAttribute("aria-busy");
@@ -250,8 +266,7 @@ googleBtn?.addEventListener("click", async () => {
     oauthPending = true;
     setButtonLoading(googleBtn, "Connecting to Google...");
     try {
-        const redirectUrl = window.location.origin
-            + window.location.pathname.replace("login.html", "index.html");
+        const redirectUrl = authNavigation?.oauthCallbackUrl() || `${window.location.origin}/index.html`;
         const { error } = await client.auth.signInWithOAuth({
             provider: "google",
             options: { redirectTo: redirectUrl }
@@ -273,5 +288,5 @@ guestBtn?.addEventListener("click", () => {
         return;
     }
     setButtonLoading(guestBtn, "Opening Pixel...");
-    window.location.href = "index.html";
+    window.location.href = appAfterAuthUrl();
 });

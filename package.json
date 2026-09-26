@@ -2,6 +2,7 @@
   "scripts": {
     "start": "npm --prefix backend start",
     "dev": "npm --prefix backend run dev",
+    "dev:frontend": "node scripts/serve-frontend.js",
     "generate:artworks": "node scripts/generate-artworks-manifest.js"
   },
   "dependencies": {

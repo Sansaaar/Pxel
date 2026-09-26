@@ -17,6 +17,20 @@ const strengthText = document.querySelector(".strength-text");
 const googleBtn = document.getElementById("googleLogin");
 const guestBtn = document.getElementById("guestLogin");
 const errorBanner = document.getElementById("authError");
+const authNavigation = window.pixelAuthNavigation;
+
+function appAfterAuthUrl() {
+    return authNavigation?.destinationAfterAuth() || "/";
+}
+
+function preserveReturnToLinks() {
+    const returnTo = authNavigation?.requestedReturnTo();
+    if (!returnTo) return;
+    const loginLink = document.querySelector('.signup-text a[href$="login.html"]');
+    if (loginLink) loginLink.href = authNavigation.authPageUrl("/login.html", returnTo);
+}
+
+preserveReturnToLinks();
 
 function showErrorBanner(msg) {
     if (errorBanner) {
@@ -160,11 +174,13 @@ form.addEventListener("submit", async (e) => {
         if (data.session) {
             localStorage.removeItem("pixel-guest");
             signupBtn.textContent = "Account created";
-            window.location.href = "index.html";
+            window.location.href = appAfterAuthUrl();
         } else {
             signupBtn.textContent = "Account created";
             showErrorBanner("Account created. Check your email to verify it, then sign in.");
-            setTimeout(() => { window.location.href = "login.html"; }, 1800);
+            setTimeout(() => {
+                window.location.href = authNavigation?.loginUrl(authNavigation.destinationAfterAuth()) || "/login.html";
+            }, 1800);
         }
 
     } catch (error) {
@@ -181,7 +197,7 @@ if (googleBtn) {
     googleBtn.addEventListener("click", async () => {
         try {
             clearErrorBanner();
-            const redirectUrl = window.location.origin + window.location.pathname.replace("signup.html", "index.html");
+            const redirectUrl = authNavigation?.oauthCallbackUrl() || `${window.location.origin}/index.html`;
             const { error } = await client.auth.signInWithOAuth({
                 provider: "google",
                 options: {
@@ -201,6 +217,6 @@ if (googleBtn) {
 if (guestBtn) {
     guestBtn.addEventListener("click", () => {
         localStorage.setItem("pixel-guest", "true");
-        window.location.href = "index.html";
+        window.location.href = appAfterAuthUrl();
     });
 }

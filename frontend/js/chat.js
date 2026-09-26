@@ -286,9 +286,11 @@
     async function sendMessage(options = {}) {
         if (!textarea) return;
         const text = textarea.value.trim();
-        let attachments = typeof window.getUploadedAttachments === "function"
-            ? window.getUploadedAttachments()
-            : [];
+        let attachments = Array.isArray(options.attachments)
+            ? options.attachments
+            : typeof window.getUploadedAttachments === "function"
+                ? window.getUploadedAttachments()
+                : [];
 
         if ((!text && attachments.length === 0) || isGenerating) return;
 
