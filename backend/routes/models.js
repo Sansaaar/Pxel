@@ -4,10 +4,11 @@
 
 const express = require("express");
 const router = express.Router();
-const { MODELS } = require("../config/models");
+const { MODELS, getModelAvailability } = require("../config/models");
 
 router.get("/", (req, res) => {
     try {
+        const availability = getModelAvailability();
         const modelList = Object.values(MODELS).map(model => ({
             id: model.id,
             name: model.display,
@@ -15,7 +16,7 @@ router.get("/", (req, res) => {
             badge: model.badge,
             description: model.description,
             capabilities: model.capabilities,
-            available: model.available
+            available: availability[model.id]
         }));
 
         res.json({

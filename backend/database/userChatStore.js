@@ -327,7 +327,7 @@ async function deleteRoom({ roomCode, userId }) {
     return true;
 }
 
-async function getRoomParticipants(roomCode) {
+async function getRoomParticipants(roomCode, userId) {
     const cleanCode = (roomCode || "").trim().toUpperCase();
     const { data: room } = await supabase
         .from("pixel_chat_conversations")
@@ -337,6 +337,10 @@ async function getRoomParticipants(roomCode) {
         .maybeSingle();
 
     if (!room) return [];
+
+    if (!await checkConversationMember(room.id, userId)) {
+        throw new Error("Access denied to this conversation.");
+    }
 
     const { data: members } = await supabase
         .from("pixel_chat_room_members")

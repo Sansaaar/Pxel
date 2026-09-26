@@ -46,7 +46,7 @@
     <script id="pixelMathJaxScript" async src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js"></script>
 </head>
 
-<body>
+<body class="auth-pending">
     <div id="pixel-loader" class="pixel-loader" role="status" aria-label="Loading Pixel AI">
         <div class="pixel-loader__content">
             <div class="pixel-loader__brand">
@@ -204,15 +204,14 @@
                     <div class="welcome" id="welcomeScreen">
                         <div class="welcome-emblem">
                             <img src="assets/pixel.png" alt="Pixel AI" class="emblem-img">
-                            <div class="emblem-glow"></div>
                         </div>
 
-                        <h1 class="welcome-title">Pixel</h1>
-                        <p class="welcome-subtitle">What are you working on today?</p>
+                        <h1 class="welcome-title">How can I help?</h1>
+                        <p class="welcome-subtitle">Bring a question, an idea, or a tough problem.</p>
 
                         <!-- Interactive Starter Prompt Cards -->
                         <div class="starter-cards-grid">
-                            <div class="starter-card" data-prompt="Explain quantum computing in simple terms with an everyday analogy.">
+                            <div class="starter-card" role="button" tabindex="0" data-prompt="Explain quantum computing in simple terms with an everyday analogy.">
                                 <div class="starter-card-top">
                                     <div class="starter-icon"><i class="fa-solid fa-bolt"></i></div>
                                     <strong>Explain something</strong>
@@ -220,7 +219,7 @@
                                 <span class="starter-text">Quantum computing in simple terms</span>
                             </div>
 
-                            <div class="starter-card" data-prompt="Write a modern, production-ready async Python script to fetch, parse, and validate JSON data.">
+                            <div class="starter-card" role="button" tabindex="0" data-prompt="Write a modern, production-ready async Python script to fetch, parse, and validate JSON data.">
                                 <div class="starter-card-top">
                                     <div class="starter-icon"><i class="fa-solid fa-code"></i></div>
                                     <strong>Help me code</strong>
@@ -228,7 +227,7 @@
                                 <span class="starter-text">Async Python script to parse REST APIs</span>
                             </div>
 
-                            <div class="starter-card" data-prompt="Brainstorm 5 innovative SaaS ideas that combine agentic workflows with developer tools.">
+                            <div class="starter-card" role="button" tabindex="0" data-prompt="Brainstorm 5 innovative SaaS ideas that combine agentic workflows with developer tools.">
                                 <div class="starter-card-top">
                                     <div class="starter-icon"><i class="fa-solid fa-lightbulb"></i></div>
                                     <strong>Brainstorm ideas</strong>
@@ -236,7 +235,7 @@
                                 <span class="starter-text">5 innovative SaaS ideas with AI workflows</span>
                             </div>
 
-                            <div class="starter-card" data-prompt="Analyze the trade-offs between monolithic architectures and event-driven microservices.">
+                            <div class="starter-card" role="button" tabindex="0" data-prompt="Analyze the trade-offs between monolithic architectures and event-driven microservices.">
                                 <div class="starter-card-top">
                                     <div class="starter-icon"><i class="fa-solid fa-chart-pie"></i></div>
                                     <strong>Analyze something</strong>
@@ -249,6 +248,10 @@
                     <!-- Chat Messages Stream Area -->
                     <div id="chatArea" class="chat-area"></div>
 
+                    <button id="aiScrollToBottomBtn" class="chat-scroll-bottom-btn ai-scroll-bottom-btn" type="button" aria-label="Scroll to latest message" aria-controls="chatArea" title="Scroll to latest message" hidden>
+                        <i class="fa-solid fa-arrow-down" aria-hidden="true"></i>
+                    </button>
+
                 </section>
 
                 <!-- Message Composer Area -->
@@ -257,6 +260,13 @@
 
                         <!-- Uploaded Attachments Preview -->
                         <div id="attachmentContainer" class="attachment-container"></div>
+
+                        <div id="chatEditNotice" class="chat-edit-notice" hidden>
+                            <span><i class="fa-solid fa-pen" aria-hidden="true"></i> Editing message</span>
+                            <button id="cancelChatEditBtn" type="button" aria-label="Cancel message edit" title="Cancel edit">
+                                <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+                            </button>
+                        </div>
 
                         <!-- Input Textarea Row -->
                         <div class="composer-input-row">
@@ -282,7 +292,7 @@
                                     type="file"
                                     hidden
                                     multiple
-                                    accept=".pdf,.txt,.md,.doc,.docx,.csv,.json,.js,.ts,.py,.java,.cpp,.c,.html,.css,image/*">
+                                    accept=".txt,.md,.csv,.json,.js,.ts,.jsx,.tsx,.py,.java,.cpp,.c,.h,.html,.css,.png,.jpg,.jpeg,.gif,.webp,image/png,image/jpeg,image/gif,image/webp">
 
                                 <!-- Model Selector Dropdown Trigger -->
                                 <div class="model-selector">
@@ -606,6 +616,16 @@
 
                     <div class="settings-group">
                         <div class="settings-group-title">Input</div>
+                        <div class="setting-row setting-row-select">
+                            <div class="setting-info">
+                                <div class="setting-icon-wrap"><i class="fa-solid fa-microchip"></i></div>
+                                <div>
+                                    <strong>Default model</strong>
+                                    <small>Saved on this device</small>
+                                </div>
+                            </div>
+                            <select id="defaultModelSelect" class="settings-select-inline" aria-label="Default AI model"></select>
+                        </div>
                         <label class="setting-row">
                             <div class="setting-info">
                                 <div class="setting-icon-wrap"><i class="fa-solid fa-paper-plane"></i></div>

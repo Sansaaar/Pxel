@@ -18,6 +18,9 @@
         webp: "image/webp",
         gif: "image/gif"
     };
+    const textExtensions = new Set(["txt", "md", "csv", "json", "js", "ts", "jsx", "tsx", "py", "java", "cpp", "c", "h", "html", "css"]);
+    const maxTotalBytes = 5 * 1024 * 1024;
+    const maxTextBytes = 500_000;
 
     function getFileType(file) {
         if (file.type) return file.type;
@@ -29,8 +32,12 @@
     // File Processing (Base64 for images, text for docs)
     // ------------------------------------------
     async function processFile(file) {
-        const type = getFileType(file);
-        const isImage = type.startsWith("image/");
+        const extension = (file.name.split(".").pop() || "").toLowerCase();
+        const isImage = Object.hasOwn(imageMimeTypes, extension);
+        if (!isImage && !textExtensions.has(extension)) return null;
+        if (isImage && file.type && file.type !== imageMimeTypes[extension]) return null;
+        if (file.size > (isImage ? maxTotalBytes : maxTextBytes)) return null;
+        const type = isImage ? imageMimeTypes[extension] : getFileType(file);
 
         return new Promise((resolve) => {
             const reader = new FileReader();
@@ -64,7 +71,7 @@
                 };
                 reader.onerror = () => resolve(null);
                 // Read up to 2MB as text
-                if (file.size <= 2 * 1024 * 1024) {
+                if (file.size <= maxTextBytes) {
                     reader.readAsText(file);
                 } else {
                     resolve({
@@ -87,9 +94,16 @@
         for (const file of fileList) {
             const exists = uploadedFiles.some(f => f.name === file.name && f.size === file.size);
             if (!exists) {
+                const totalSize = uploadedFiles.reduce((sum, item) => sum + item.size, 0);
+                if (uploadedFiles.length >= 4 || totalSize + file.size > maxTotalBytes) {
+                    window.showChatToast?.("Attach up to four files with a combined size of 5 MB or less.", "error");
+                    continue;
+                }
                 const item = await processFile(file);
                 if (item) {
                     uploadedFiles.push(item);
+                } else {
+                    window.showChatToast?.(`${file.name} is unsupported or too large.`, "error");
                 }
             }
         }

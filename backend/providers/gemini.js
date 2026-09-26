@@ -19,7 +19,7 @@ function getClient() {
     return client;
 }
 
-async function* generate(model, history) {
+async function* generate(model, history, { signal } = {}) {
     const ai = getClient();
 
     // Map history to Gemini format (role: user | model)
@@ -67,7 +67,9 @@ async function* generate(model, history) {
         contents,
         config: {
             systemInstruction: SYSTEM_PROMPT,
-            temperature: 0.7
+            temperature: 0.7,
+            abortSignal: signal,
+            httpOptions: { timeout: 60_000 }
         }
     });
 

@@ -7,6 +7,3 @@ window.supabaseClient = window.supabase.createClient(
     SUPABASE_URL,
     SUPABASE_ANON_KEY
 );
-
-console.log("Client:", window.supabaseClient);
-console.log("Auth:", window.supabaseClient.auth);

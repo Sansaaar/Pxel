@@ -3,8 +3,7 @@
 // ==========================================
 
 const memory = require("../memory/conversations");
-const { MODELS, resolveModel } = require("../config/models");
-const { SYSTEM_PROMPT } = require("../prompts/systemPrompt");
+const { MODELS, resolveModel, isProviderConfigured } = require("../config/models");
 
 const providers = {
     groq: require("../providers/groq"),
@@ -30,38 +29,30 @@ const VISION_MODELS = [
 ];
 
 function selectBestModel(hasImages = false) {
-    if (hasImages) {
-        return "gemini-3.5-flash-lite";
-    }
-
-    return "gemini-3.5-flash-lite";
+    const candidates = hasImages ? VISION_MODELS : FALLBACK_CHAIN;
+    return candidates.find(key => isProviderConfigured(MODELS[key]?.provider)) || null;
 }
 
-async function* generateWithFallback(
-    targetModel,
-    history,
-    hasImages = false
-) {
-    const candidateModels = [];
+async function* generateWithFallback(targetModel, history, hasImages = false, onModelSelected = () => {}, signal) {
+    const explicitlySelected = targetModel !== "auto";
+    const fallbackCandidates = (hasImages ? VISION_MODELS : FALLBACK_CHAIN).filter((modelKey, index, all) =>
+        all.indexOf(modelKey) === index && isProviderConfigured(MODELS[modelKey]?.provider)
+    );
+    const preferredModel = !explicitlySelected ? selectBestModel(hasImages) : null;
+    const candidateModels = explicitlySelected
+        ? [targetModel]
+        : [preferredModel, ...fallbackCandidates].filter((modelKey, index, all) => modelKey && all.indexOf(modelKey) === index);
 
-    if (targetModel && targetModel !== "auto") {
-        candidateModels.push(targetModel);
+    if (explicitlySelected && hasImages && !VISION_MODELS.includes(targetModel)) {
+        const error = new Error("The selected model does not support image attachments.");
+        error.code = "MODEL_UNSUPPORTED_ATTACHMENT";
+        throw error;
     }
 
-    // If request contains images, prioritize vision models first
-    if (hasImages) {
-        for (const vm of VISION_MODELS) {
-            if (!candidateModels.includes(vm)) {
-                candidateModels.push(vm);
-            }
-        }
-    }
-
-    // Add fallbacks
-    for (const fb of FALLBACK_CHAIN) {
-        if (!candidateModels.includes(fb)) {
-            candidateModels.push(fb);
-        }
+    if (!candidateModels.length) {
+        const error = new Error("No configured model is available for this request.");
+        error.code = "MODEL_UNAVAILABLE";
+        throw error;
     }
 
     let lastError = null;
@@ -72,21 +63,20 @@ async function* generateWithFallback(
         if (
             !modelInfo ||
             !modelInfo.provider ||
-            !providers[modelInfo.provider]
+            !providers[modelInfo.provider] ||
+            !isProviderConfigured(modelInfo.provider)
         ) {
             continue;
         }
 
+        let hasYielded = false;
         try {
-            console.log(
-                `[Pixel AI] Attempting ${modelInfo.provider}:${modelKey}...`
-            );
+            onModelSelected(modelKey, candidateModels[0] !== modelKey);
+            console.log(`[Pixel AI] Attempting ${modelInfo.provider}:${modelKey}...`);
 
             const provider = providers[modelInfo.provider];
 
-            const stream = provider.generate(modelKey, history);
-
-            let hasYielded = false;
+            const stream = provider.generate(modelKey, history, { signal });
 
             for await (const token of stream) {
                 hasYielded = true;
@@ -98,20 +88,20 @@ async function* generateWithFallback(
             }
 
         } catch (err) {
-            console.warn(
-                `[Pixel AI] Model ${modelKey} failed (${err.message}). Trying fallback...`
-            );
+            console.warn(`[Pixel AI] Model ${modelKey} failed:`, err.message);
 
             lastError = err;
+            if (explicitlySelected || hasYielded || signal?.aborted) break;
         }
     }
 
-    throw lastError || new Error(
-        "All AI models are currently unavailable. Please check your API keys."
-    );
+    if (lastError) throw lastError;
+    const error = new Error("All AI models are currently unavailable.");
+    error.code = "MODEL_UNAVAILABLE";
+    throw error;
 }
 
-async function generate(conversationId, message, selectedModel) {
+async function generate(conversationId, message, selectedModel, onModelSelected, signal) {
 
     const history = memory.getConversation(conversationId);
 
@@ -126,25 +116,23 @@ async function generate(conversationId, message, selectedModel) {
     // Build the final AI message history
     // ==========================================
 
-    const aiHistory = [
-        {
-            role: "system",
-            content: SYSTEM_PROMPT
-        },
-        ...history
-    ];
+    const aiHistory = history;
 
     // Resolve model name or alias
-    let resolvedKey = resolveModel(selectedModel);
+    const resolvedKey = resolveModel(selectedModel);
 
-    if (resolvedKey === "auto") {
-        resolvedKey = selectBestModel(hasImages);
+    if (!resolvedKey) {
+        const error = new Error("The requested model is not supported.");
+        error.code = "INVALID_MODEL";
+        throw error;
     }
 
     return generateWithFallback(
         resolvedKey,
         aiHistory,
-        hasImages
+        hasImages,
+        onModelSelected,
+        signal
     );
 }
 

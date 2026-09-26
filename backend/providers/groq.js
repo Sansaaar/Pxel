@@ -19,7 +19,7 @@ function getClient() {
     return client;
 }
 
-async function* generate(model, history) {
+async function* generate(model, history, { signal } = {}) {
     const groq = getClient();
 
     const messages = [
@@ -51,7 +51,7 @@ async function* generate(model, history) {
         temperature: 0.7,
         max_completion_tokens: 4096,
         stream: true
-    });
+    }, { signal, timeout: 60_000 });
 
     let isThinking = false;
 

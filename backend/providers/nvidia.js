@@ -20,7 +20,7 @@ function getClient() {
     return client;
 }
 
-async function* generate(model, history) {
+async function* generate(model, history, { signal } = {}) {
     const nvidia = getClient();
 
     const messages = [
@@ -90,7 +90,7 @@ async function* generate(model, history) {
         temperature: 0.7,
         max_tokens: 4096,
         stream: true
-    });
+    }, { signal, timeout: 60_000 });
 
     for await (const chunk of stream) {
         const token = chunk.choices?.[0]?.delta?.content;

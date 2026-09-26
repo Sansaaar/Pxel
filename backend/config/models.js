@@ -103,11 +103,36 @@ function resolveModel(modelKey) {
     if (ALIASES[modelKey]) {
         return ALIASES[modelKey];
     }
-    return "auto";
+    return null;
+}
+
+function isProviderConfigured(provider, env = process.env) {
+    const keys = {
+        gemini: "GEMINI_API_KEY",
+        groq: "GROQ_API_KEY",
+        nvidia: "NVIDIA_API_KEY",
+        openrouter: "OPENROUTER_API_KEY"
+    };
+    return provider === "auto"
+        ? Object.values(keys).some(key => Boolean(env[key]))
+        : Boolean(keys[provider] && env[keys[provider]]);
+}
+
+function getModelAvailability(env = process.env) {
+    return Object.fromEntries(Object.entries(MODELS).map(([id, model]) => [
+        id,
+        model.provider === "auto"
+            ? Object.values(MODELS).some(candidate =>
+                candidate.provider !== "auto" && isProviderConfigured(candidate.provider, env)
+            )
+            : isProviderConfigured(model.provider, env)
+    ]));
 }
 
 module.exports = {
     MODELS,
     ALIASES,
-    resolveModel
+    resolveModel,
+    isProviderConfigured,
+    getModelAvailability
 };

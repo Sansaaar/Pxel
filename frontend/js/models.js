@@ -69,16 +69,16 @@
         }
     ];
 
-    let availableModels = [...DEFAULT_MODELS];
+    let availableModels = [{ ...DEFAULT_MODELS[0], available: true }];
     let currentModel = DEFAULT_MODELS[0];
+    let savedModelId = null;
 
     // Restore saved model preference
     try {
         const saved = localStorage.getItem("pixel-model");
         if (saved) {
             const parsed = JSON.parse(saved);
-            const found = availableModels.find(m => m.id === parsed.id);
-            if (found) currentModel = found;
+            savedModelId = parsed.id;
         }
     } catch (e) {
         console.warn("[Pixel Models] Could not parse saved model:", e);
@@ -133,7 +133,7 @@
                     const isSelected = m.id === currentModel.id;
                     const icon = m.icon || getModelIcon(m.provider);
                     return `
-                        <div class="model-item ${isSelected ? "selected" : ""}" data-model-id="${m.id}" role="menuitem" tabindex="0">
+                            <div class="model-item ${isSelected ? "selected" : ""} ${m.available === false ? "unavailable" : ""}" data-model-id="${m.id}" role="menuitem" tabindex="${m.available === false ? "-1" : "0"}" aria-disabled="${m.available === false}">
                             <div class="model-item-top">
                                 <div class="model-item-left">
                                     <span class="model-item-icon">${icon}</span>
@@ -141,7 +141,7 @@
                                 </div>
                                 <span class="model-item-badge badge-${m.provider}">${m.badge || m.provider}</span>
                             </div>
-                            <div class="model-item-desc">${m.description || ""}</div>
+                            <div class="model-item-desc">${m.available === false ? "Not configured on this server" : (m.description || "")}</div>
                             ${m.capabilities ? `
                                 <div class="model-caps">
                                     ${m.capabilities.map(cap => `<span class="cap-tag">${cap}</span>`).join("")}
@@ -159,11 +159,12 @@
             const model = availableModels.find(m => m.id === id);
 
             const select = () => {
-                if (!model) return;
+                if (!model || model.available === false) return;
                 currentModel = model;
                 localStorage.setItem("pixel-model", JSON.stringify(currentModel));
                 updateTriggerUI();
                 renderMenu();
+                window.dispatchEvent(new CustomEvent("pixel-models-updated"));
                 closeMenu();
             };
 
@@ -223,17 +224,25 @@
                     ...m,
                     icon: getModelIcon(m.provider)
                 }));
-                // Keep selected model updated if it exists in list
-                const match = availableModels.find(m => m.id === currentModel.id);
+                const match = availableModels.find(m => m.id === savedModelId && m.available !== false);
                 if (match) {
                     currentModel = match;
+                } else {
+                    currentModel = availableModels.find(m => m.id === "auto") || availableModels[0];
+                    localStorage.setItem("pixel-model", JSON.stringify(currentModel));
                 }
                 updateTriggerUI();
                 renderMenu();
+                window.dispatchEvent(new CustomEvent("pixel-models-updated"));
                 console.log("[Pixel Models] Loaded", availableModels.length, "models from API.");
             }
         } catch (err) {
-            console.warn("[Pixel Models] Could not fetch models API, using verified defaults:", err.message);
+            availableModels = [{ ...DEFAULT_MODELS[0], available: true }];
+            currentModel = availableModels[0];
+            updateTriggerUI();
+            renderMenu();
+            window.dispatchEvent(new CustomEvent("pixel-models-updated"));
+            console.warn("[Pixel Models] Could not load server model availability:", err.message);
         }
     }
 

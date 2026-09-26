@@ -77,6 +77,14 @@
     const cancelMultiSelectBtn = document.getElementById("cancelMultiSelectBtn");
 
     const REACTION_EMOJIS = ["👍", "❤️", "😂", "🔥", "😮", "🚀", "💡", "😢"];
+    const SAFE_ATTACHMENT_TYPES = new Set([
+        "image/png", "image/jpeg", "image/gif", "image/webp",
+        "application/pdf", "application/json", "text/plain", "text/markdown", "text/csv",
+        "application/msword", "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        "application/vnd.ms-excel", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        "application/vnd.ms-powerpoint", "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+        "audio/mpeg", "audio/ogg", "audio/wav", "audio/webm", "video/mp4", "video/webm"
+    ]);
 
     // ── Helpers ───────────────────────────────────
     function esc(str) {
@@ -89,9 +97,9 @@
     function buildUrl(path) {
         if (!path) return "";
         if (path.startsWith("http://") || path.startsWith("https://")) return path;
-        const base = (window.API_BASE !== undefined && window.API_BASE !== "")
+        const base = window.API_BASE !== undefined
             ? window.API_BASE
-            : (location.port === "3000" ? "" : "http://localhost:3000");
+            : (location.port === "3000" || location.port === "3001" ? "" : "http://localhost:3000");
         const cleanPath = path.startsWith("/") ? path : "/" + path;
         return `${base}${cleanPath}`;
     }
@@ -107,10 +115,6 @@
             } catch (e) {
                 console.warn("[UserChat] Session retrieval error:", e);
             }
-        }
-        if (currentUser?.id) {
-            headers["X-Pixel-User-Id"] = currentUser.id;
-            headers["X-Pixel-User-Name"] = currentUser.display_name;
         }
         return headers;
     }
@@ -162,8 +166,9 @@
 
     // ── User Identity ─────────────────────────────
     function initUserIdentity() {
+        let resolvedUser = null;
         if (window.currentUser && window.currentUser.id && window.currentUser.id !== "guest-user") {
-            currentUser = {
+            resolvedUser = {
                 id: window.currentUser.id,
                 email: window.currentUser.email || "user@pixel.local",
                 display_name:
@@ -172,18 +177,23 @@
                     (window.currentUser.email ? window.currentUser.email.split("@")[0] : "Pixel User")
             };
         } else {
-            let localId = localStorage.getItem("pixel_user_chat_id");
-            if (!localId) {
-                localId = `usr_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
-                localStorage.setItem("pixel_user_chat_id", localId);
-            }
-            currentUser = {
-                id: localId,
-                email: `${localId}@pixel.local`,
-                display_name: localStorage.getItem("pixel-display-name") || "Pixel User"
-            };
+            resolvedUser = null;
+            showSignInRequired();
         }
+        if (currentUser?.id === resolvedUser?.id) return;
+        currentUser = resolvedUser;
         syncAuth();
+    }
+
+    function showSignInRequired() {
+        if (!messagesArea) return;
+        messagesArea.innerHTML = `
+            <div class="chat-empty-state">
+                <div class="chat-empty-state-icon"><i class="fa-solid fa-lock" aria-hidden="true"></i></div>
+                <h2>Sign in to use rooms</h2>
+                <p>Shared chats are available to signed-in Pixel accounts.</p>
+                <a class="chat-action-btn primary" href="login.html">Sign in</a>
+            </div>`;
     }
 
     async function syncAuth() {
@@ -209,18 +219,24 @@
         }, 30000);
     }
 
-    function startSseStream() {
+    async function startSseStream() {
         if (!currentUser || eventSource) return;
-        const url = buildUrl(`/api/user-chat/stream?userId=${encodeURIComponent(currentUser.id)}&userName=${encodeURIComponent(currentUser.display_name)}`);
-        eventSource = new EventSource(url);
-        eventSource.onmessage = e => {
-            try { handleServerEvent(JSON.parse(e.data)); } catch (_) {}
-        };
-        eventSource.onerror = () => {
-            eventSource.close();
-            eventSource = null;
-            setTimeout(startSseStream, 5000);
-        };
+        try {
+            const ticketData = await api("/api/user-chat/stream-ticket", { method: "POST" });
+            if (!ticketData.success || !ticketData.ticket) return;
+            const url = buildUrl(`/api/user-chat/stream?ticket=${encodeURIComponent(ticketData.ticket)}`);
+            eventSource = new EventSource(url);
+            eventSource.onmessage = e => {
+                try { handleServerEvent(JSON.parse(e.data)); } catch (_) {}
+            };
+            eventSource.onerror = () => {
+                eventSource.close();
+                eventSource = null;
+                setTimeout(startSseStream, 5000);
+            };
+        } catch (error) {
+            console.warn("[UserChat] Secure event stream could not be started.");
+        }
     }
 
     function subscribeSupabaseRealtime() {
@@ -818,7 +834,7 @@
                     const directUrl = typeof a.url === "string" && a.url.startsWith("data:") ? a.url : "";
                     attachHtml += `<img class="chat-msg-img-attachment" src="${esc(directUrl)}" data-attachment-index="${attachmentIndex}" alt="${esc(a.name || "Image attachment")}"/>`;
                 } else {
-                    attachHtml += `<a class="chat-msg-file-attachment" href="${esc(a.url)}" target="_blank" download="${esc(a.name)}"><i class="fa-solid fa-paperclip"></i> ${esc(a.name || "Attachment")}</a>`;
+                    attachHtml += `<a class="chat-msg-file-attachment" href="#" target="_blank" rel="noopener noreferrer" aria-disabled="true" data-attachment-index="${attachmentIndex}" download="${esc(a.name)}"><i class="fa-solid fa-paperclip"></i> ${esc(a.name || "Attachment")}</a>`;
                 }
             });
             attachHtml += `</div>`;
@@ -964,6 +980,50 @@
                 attachmentUrlCache.delete(cacheKey);
                 if (img.isConnected) img.alt = "Image unavailable";
             });
+        });
+        row.querySelectorAll(".chat-msg-file-attachment").forEach(link => {
+            const attachment = msg.attachments[Number(link.dataset.attachmentIndex)];
+            const type = typeof attachment?.type === "string" ? attachment.type.toLowerCase() : "";
+            link.addEventListener("click", event => {
+                if (link.getAttribute("aria-disabled") === "true") event.preventDefault();
+            });
+            const dataUrl = typeof attachment?.url === "string" &&
+                SAFE_ATTACHMENT_TYPES.has(type) &&
+                attachment.url.startsWith(`data:${type};base64,`) &&
+                attachment.url.length <= 7 * 1024 * 1024
+                ? attachment.url
+                : "";
+            const path = typeof attachment?.path === "string" && attachment.path.length <= 512
+                ? attachment.path
+                : "";
+
+            const enableLink = url => {
+                if (!link.isConnected || !/^https:\/\//i.test(url)) return;
+                link.href = url;
+                link.removeAttribute("aria-disabled");
+            };
+
+            if (dataUrl) {
+                link.href = dataUrl;
+                link.removeAttribute("aria-disabled");
+                return;
+            }
+            if (!path) return;
+
+            const cacheKey = `${msg.chat_id}:${path}`;
+            let signedUrl = attachmentUrlCache.get(cacheKey);
+            if (!signedUrl) {
+                signedUrl = api(`/api/user-chat/attachment-url?chatId=${encodeURIComponent(msg.chat_id)}&path=${encodeURIComponent(path)}`)
+                    .then(data => {
+                        if (!data.success || !data.signedUrl) throw new Error(data.error || "Unable to load attachment");
+                        return data.signedUrl;
+                    });
+                attachmentUrlCache.set(cacheKey, signedUrl);
+            }
+            Promise.resolve(signedUrl).then(url => {
+                attachmentUrlCache.set(cacheKey, url);
+                enableLink(url);
+            }).catch(() => attachmentUrlCache.delete(cacheKey));
         });
     }
 
@@ -1302,6 +1362,23 @@
 
         for (const file of Array.from(files)) {
             const type = file.type || (/\.(jpe?g|png|gif|webp)$/i.test(file.name) ? `image/${file.name.split(".").pop().toLowerCase().replace("jpg", "jpeg")}` : "application/octet-stream");
+            if (!SAFE_ATTACHMENT_TYPES.has(type.toLowerCase())) {
+                showToast("This file type is not supported in shared chats.", "error");
+                continue;
+            }
+            if (typeof file.name !== "string" || file.name.length > 180) {
+                showToast("The file name is too long.", "error");
+                continue;
+            }
+            const nextTotal = pendingAttachments.reduce((sum, item) => sum + (item.size || 0), 0) + file.size;
+            if (!Number.isInteger(file.size) || file.size < 1 || file.size > 5 * 1024 * 1024 || nextTotal > 5 * 1024 * 1024) {
+                showToast("Shared-chat attachments are limited to 5 MB total.", "error");
+                continue;
+            }
+            if (pendingAttachments.length >= 4) {
+                showToast("You can attach up to 4 files per message.", "error");
+                break;
+            }
             const attachment = {
                 name: file.name,
                 type,
@@ -1314,7 +1391,7 @@
             try {
                 const urlData = await api("/api/user-chat/upload-url", {
                     method: "POST",
-                    body: JSON.stringify({ fileName: file.name, contentType: type, chatId: activeChatId })
+                    body: JSON.stringify({ fileName: file.name, contentType: type, fileSize: file.size, chatId: activeChatId })
                 });
 
                 if (!urlData.success) throw new Error(urlData.error || "Failed to get upload URL");
@@ -1857,6 +1934,8 @@
         initUserIdentity();
         setupEventListeners();
     });
+
+    window.addEventListener("pixel-auth-ready", initUserIdentity);
 
     window.loadUserChatSystem = () => {
         if (!currentUser) {

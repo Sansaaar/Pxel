@@ -157,19 +157,21 @@ form.addEventListener("submit", async (e) => {
             throw error;
         }
 
-        signupBtn.innerHTML = "Account Created ✓";
-        signupBtn.style.background = "#D4AF37";
-
-        showErrorBanner("🎉 Account created! Please check your email to verify, then sign in.");
-        setTimeout(() => {
-            window.location.href = "login.html";
-        }, 1500);
+        if (data.session) {
+            localStorage.removeItem("pixel-guest");
+            signupBtn.textContent = "Account created";
+            window.location.href = "index.html";
+        } else {
+            signupBtn.textContent = "Account created";
+            showErrorBanner("Account created. Check your email to verify it, then sign in.");
+            setTimeout(() => { window.location.href = "login.html"; }, 1800);
+        }
 
     } catch (error) {
         console.error("[Pixel Signup Error]:", error);
         signupBtn.disabled = false;
         signupBtn.innerHTML = "Create Account";
-        showErrorBanner(error.message || "Failed to create account. Please try again.");
+        showErrorBanner(window.pixelAuthErrorMessage(error, "signup"));
         shake(form);
     }
 });
@@ -190,7 +192,7 @@ if (googleBtn) {
             if (error) throw error;
         } catch (error) {
             console.error("[Pixel Google OAuth Error]:", error);
-            showErrorBanner(error.message || "Could not connect to Google sign in.");
+            showErrorBanner(window.pixelAuthErrorMessage(error, "signup"));
         }
     });
 }

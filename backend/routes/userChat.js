@@ -5,18 +5,53 @@
 // ==========================================
 
 const express = require("express");
+const crypto = require("node:crypto");
 const router = express.Router();
 const supabase = require("../database/supabase");
 const store = require("../database/userChatStore");
+const streamTickets = new Map();
+const MAX_ATTACHMENT_BYTES = 5 * 1024 * 1024;
+const ALLOWED_ATTACHMENT_TYPES = new Set([
+    "image/png", "image/jpeg", "image/gif", "image/webp",
+    "application/pdf", "application/json",
+    "text/plain", "text/markdown", "text/csv",
+    "application/msword", "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    "application/vnd.ms-excel", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    "application/vnd.ms-powerpoint", "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+    "audio/mpeg", "audio/ogg", "audio/wav", "audio/webm",
+    "video/mp4", "video/webm"
+]);
+
+const publicChatErrors = new Set([
+    "Invalid room code. Please check and try again.",
+    "Room not found.",
+    "Only the room creator can set the topic.",
+    "Only the room creator can delete this room.",
+    "Conversation or room not found.",
+    "Access denied to this conversation.",
+    "Access denied.",
+    "Message not found.",
+    "You can only edit your own messages.",
+    "You can only delete your own messages or room messages as owner.",
+    "Only the room owner can pin messages.",
+    "Invalid attachment path.",
+    "Attachment not found in this conversation."
+]);
+
+function publicErrorMessage(error, status) {
+    console.error("[UserChat Router] Request failed:", error?.message || error);
+    if (publicChatErrors.has(error?.message)) return error.message;
+    if (status === 403) return "You do not have access to this conversation.";
+    if (status === 401) return "Please sign in again.";
+    return "Unable to complete this request. Check the details and try again.";
+}
 
 // ── Authentication & Profile Synchronization ─────
 async function getAuthenticatedUser(req) {
     const authHeader = req.headers.authorization || req.headers.Authorization;
-    let token = null;
-
-    if (authHeader && authHeader.startsWith("Bearer ")) {
-        token = authHeader.split(" ")[1];
-    }
+    const token = authHeader?.startsWith("Bearer ")
+        ? authHeader.slice(7).trim()
+        : null;
 
     if (token) {
         try {
@@ -38,18 +73,6 @@ async function getAuthenticatedUser(req) {
         }
     }
 
-    // Fallback: for guest mode or development header
-    const guestId = req.headers["x-pixel-user-id"] || req.query.userId || req.body?.userId;
-    if (guestId) {
-        const guestName = req.headers["x-pixel-user-name"] || "Pixel User";
-        return await store.registerOrUpdateUser({
-            id: guestId,
-            email: `${guestId}@pixel.local`,
-            display_name: guestName,
-            avatar: guestName.trim().charAt(0).toUpperCase()
-        });
-    }
-
     return null;
 }
 
@@ -66,6 +89,18 @@ router.post("/auth", async (req, res) => {
     }
 });
 
+router.post("/stream-ticket", async (req, res) => {
+    const user = await getAuthenticatedUser(req);
+    if (!user) return res.status(401).json({ success: false, error: "Authentication required." });
+    const now = Date.now();
+    for (const [ticket, entry] of streamTickets) {
+        if (now >= entry.expiresAt) streamTickets.delete(ticket);
+    }
+    const ticket = crypto.randomBytes(32).toString("base64url");
+    streamTickets.set(ticket, { user, expiresAt: now + 30_000 });
+    return res.json({ success: true, ticket });
+});
+
 // ── Presence Ping ─────────────────────────────────
 router.post("/ping", async (req, res) => {
     try {
@@ -74,7 +109,7 @@ router.post("/ping", async (req, res) => {
         await store.pingOnline(user.id);
         return res.json({ success: true });
     } catch (err) {
-        return res.status(500).json({ success: false, error: err.message });
+        return res.status(500).json({ success: false, error: publicErrorMessage(err, 500) });
     }
 });
 
@@ -86,7 +121,7 @@ router.get("/users", async (req, res) => {
         const users = await store.searchUsers(req.query.q || "", user.id);
         return res.json({ success: true, users });
     } catch (err) {
-        return res.status(500).json({ success: false, error: err.message });
+        return res.status(500).json({ success: false, error: publicErrorMessage(err, 500) });
     }
 });
 
@@ -98,7 +133,7 @@ router.get("/conversations", async (req, res) => {
         const conversations = await store.getUserConversations(user.id);
         return res.json({ success: true, conversations });
     } catch (err) {
-        return res.status(500).json({ success: false, error: err.message });
+        return res.status(500).json({ success: false, error: publicErrorMessage(err, 500) });
     }
 });
 
@@ -117,7 +152,7 @@ router.post("/direct", async (req, res) => {
         const conversation = await store.getOrCreateDirectConversation(user, targetUser);
         return res.json({ success: true, conversation });
     } catch (err) {
-        return res.status(500).json({ success: false, error: err.message });
+        return res.status(500).json({ success: false, error: publicErrorMessage(err, 500) });
     }
 });
 
@@ -134,7 +169,7 @@ router.post("/rooms/create", async (req, res) => {
         });
         return res.json({ success: true, room });
     } catch (err) {
-        return res.status(500).json({ success: false, error: err.message });
+        return res.status(500).json({ success: false, error: publicErrorMessage(err, 500) });
     }
 });
 
@@ -148,7 +183,7 @@ router.post("/rooms/join", async (req, res) => {
         const room = await store.joinRoom({ roomCode: req.body.roomCode, user });
         return res.json({ success: true, room });
     } catch (err) {
-        return res.status(400).json({ success: false, error: err.message });
+        return res.status(400).json({ success: false, error: publicErrorMessage(err, 400) });
     }
 });
 
@@ -165,7 +200,7 @@ router.post("/rooms/topic", async (req, res) => {
         });
         return res.json({ success: true, room });
     } catch (err) {
-        return res.status(400).json({ success: false, error: err.message });
+        return res.status(400).json({ success: false, error: publicErrorMessage(err, 400) });
     }
 });
 
@@ -178,7 +213,7 @@ router.post("/rooms/delete", async (req, res) => {
         await store.deleteRoom({ roomCode: req.body.roomCode, userId: user.id });
         return res.json({ success: true, message: "Room deleted successfully." });
     } catch (err) {
-        return res.status(400).json({ success: false, error: err.message });
+        return res.status(400).json({ success: false, error: publicErrorMessage(err, 400) });
     }
 });
 
@@ -191,10 +226,10 @@ router.get("/rooms/participants", async (req, res) => {
         const { roomCode } = req.query;
         if (!roomCode) return res.status(400).json({ success: false, error: "roomCode parameter required." });
 
-        const participants = await store.getRoomParticipants(roomCode);
+        const participants = await store.getRoomParticipants(roomCode, user.id);
         return res.json({ success: true, participants });
     } catch (err) {
-        return res.status(500).json({ success: false, error: err.message });
+        return res.status(403).json({ success: false, error: publicErrorMessage(err, 403) });
     }
 });
 
@@ -215,7 +250,7 @@ router.get("/messages", async (req, res) => {
         const messages = await store.getMessages(chatId, user.id, parseInt(limit) || 100, before || null);
         return res.json({ success: true, messages });
     } catch (err) {
-        return res.status(403).json({ success: false, error: err.message });
+        return res.status(403).json({ success: false, error: publicErrorMessage(err, 403) });
     }
 });
 
@@ -275,7 +310,7 @@ router.post("/react", async (req, res) => {
         });
         return res.json({ success: true, reactions: result.reactions });
     } catch (err) {
-        return res.status(400).json({ success: false, error: err.message });
+        return res.status(400).json({ success: false, error: publicErrorMessage(err, 400) });
     }
 });
 
@@ -293,7 +328,7 @@ router.post("/edit", async (req, res) => {
         });
         return res.json({ success: true, message: msg });
     } catch (err) {
-        return res.status(400).json({ success: false, error: err.message });
+        return res.status(400).json({ success: false, error: publicErrorMessage(err, 400) });
     }
 });
 
@@ -310,7 +345,7 @@ router.post("/delete-message", async (req, res) => {
         });
         return res.json({ success: true, message: "Message deleted." });
     } catch (err) {
-        return res.status(400).json({ success: false, error: err.message });
+        return res.status(400).json({ success: false, error: publicErrorMessage(err, 400) });
     }
 });
 
@@ -323,7 +358,7 @@ router.post("/clear-history", async (req, res) => {
         await store.clearChatHistory({ chatId: req.body.chatId, userId: user.id });
         return res.json({ success: true, message: "History cleared." });
     } catch (err) {
-        return res.status(400).json({ success: false, error: err.message });
+        return res.status(400).json({ success: false, error: publicErrorMessage(err, 400) });
     }
 });
 
@@ -341,7 +376,7 @@ router.post("/typing", async (req, res) => {
         });
         return res.json({ success: true });
     } catch (err) {
-        return res.status(500).json({ success: false, error: err.message });
+        return res.status(500).json({ success: false, error: publicErrorMessage(err, 500) });
     }
 });
 
@@ -358,7 +393,7 @@ router.post("/pin", async (req, res) => {
         });
         return res.json({ success: true, ...result });
     } catch (err) {
-        return res.status(400).json({ success: false, error: err.message });
+        return res.status(400).json({ success: false, error: publicErrorMessage(err, 400) });
     }
 });
 
@@ -371,7 +406,7 @@ router.get("/pinned", async (req, res) => {
         const messages = await store.getPinnedMessages(req.query.chatId, user.id);
         return res.json({ success: true, messages });
     } catch (err) {
-        return res.status(500).json({ success: false, error: err.message });
+        return res.status(500).json({ success: false, error: publicErrorMessage(err, 500) });
     }
 });
 
@@ -381,9 +416,19 @@ router.post("/upload-url", async (req, res) => {
         const user = await getAuthenticatedUser(req);
         if (!user) return res.status(401).json({ success: false, error: "Authentication required." });
 
-        const { fileName, contentType, chatId } = req.body;
-        if (!fileName) return res.status(400).json({ success: false, error: "fileName is required." });
-        if (!chatId) return res.status(400).json({ success: false, error: "chatId is required." });
+        const { fileName, contentType, fileSize, chatId } = req.body;
+        if (typeof fileName !== "string" || !fileName.trim() || fileName.length > 180) {
+            return res.status(400).json({ success: false, error: "Choose a valid file name." });
+        }
+        if (!Number.isInteger(fileSize) || fileSize < 1 || fileSize > MAX_ATTACHMENT_BYTES) {
+            return res.status(400).json({ success: false, error: "Files must be 5 MB or smaller." });
+        }
+        if (typeof contentType !== "string" || !ALLOWED_ATTACHMENT_TYPES.has(contentType.toLowerCase())) {
+            return res.status(400).json({ success: false, error: "This file type is not supported in shared chats." });
+        }
+        if (typeof chatId !== "string" || !chatId || chatId.length > 180) {
+            return res.status(400).json({ success: false, error: "Conversation ID is required." });
+        }
         if (!await store.checkConversationMember(chatId, user.id)) {
             return res.status(403).json({ success: false, error: "You are not a member of this conversation." });
         }
@@ -391,7 +436,7 @@ router.post("/upload-url", async (req, res) => {
         const result = await store.getUploadSignedUrl(fileName, contentType || "application/octet-stream", chatId);
         return res.json({ success: true, ...result });
     } catch (err) {
-        return res.status(500).json({ success: false, error: err.message });
+        return res.status(500).json({ success: false, error: publicErrorMessage(err, 500) });
     }
 });
 
@@ -408,13 +453,16 @@ router.get("/attachment-url", async (req, res) => {
         const signedUrl = await store.getAttachmentSignedUrl({ chatId, path, userId: user.id });
         return res.json({ success: true, signedUrl });
     } catch (err) {
-        return res.status(403).json({ success: false, error: err.message });
+        return res.status(403).json({ success: false, error: publicErrorMessage(err, 403) });
     }
 });
 
 // ── Realtime SSE Stream ───────────────────────────
 router.get("/stream", async (req, res) => {
-    const user = await getAuthenticatedUser(req);
+    const ticket = typeof req.query.ticket === "string" ? req.query.ticket : "";
+    const entry = streamTickets.get(ticket);
+    streamTickets.delete(ticket);
+    const user = entry && Date.now() < entry.expiresAt ? entry.user : null;
     if (!user) return res.status(401).end("Unauthorized");
 
     res.setHeader("Content-Type", "text/event-stream");

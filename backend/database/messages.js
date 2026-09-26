@@ -25,6 +25,24 @@ async function saveMessage(conversationId, role, content) {
     }
 }
 
+async function deleteMessagesFrom(conversationId, timestamp) {
+    if (!conversationId || !UUID_REGEX.test(conversationId) || !timestamp) return;
+    const { error } = await supabase
+        .from("messages")
+        .delete()
+        .eq("conversation_id", conversationId)
+        .gte("created_at", timestamp);
+    if (error) throw error;
+}
+
+async function clearConversation(conversationId) {
+    if (!conversationId || !UUID_REGEX.test(conversationId)) return;
+    const { error } = await supabase.from("messages").delete().eq("conversation_id", conversationId);
+    if (error) throw error;
+}
+
 module.exports = {
-    saveMessage
+    saveMessage,
+    deleteMessagesFrom,
+    clearConversation
 };

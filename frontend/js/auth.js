@@ -4,36 +4,43 @@
 
 const client = window.supabaseClient;
 
+function setCurrentUser(user) {
+    window.currentUser = user;
+    if (user) document.body?.classList.remove("auth-pending");
+    window.dispatchEvent(new CustomEvent("pixel-auth-ready"));
+}
+
+function guestUser() {
+    return { id: "guest-user", email: "guest@pixel.local", user_metadata: { display_name: "Guest Explorer" } };
+}
+
 async function checkSession() {
     try {
         if (!client) {
             console.warn("[Pixel Auth] Supabase client not initialized.");
+            if (localStorage.getItem("pixel-guest") === "true") {
+                setCurrentUser(guestUser());
+            } else {
+                window.location.replace("login.html");
+            }
             return;
         }
 
         const { data, error } = await client.auth.getSession();
 
-        if (error) {
-            console.error("[Pixel Auth] Session check error:", error);
-        }
+        if (error) throw error;
 
         if (data && data.session) {
-            window.currentUser = data.session.user;
+            setCurrentUser(data.session.user);
             localStorage.removeItem("pixel-guest");
-            console.log("[Pixel Auth] Active session:", data.session.user.email);
+            console.log("[Pixel Auth] Active session restored.");
             return;
         }
 
         // Check if user chose to continue as guest
         const isGuest = localStorage.getItem("pixel-guest") === "true";
         if (isGuest) {
-            window.currentUser = {
-                id: "guest-user",
-                email: "guest@pixel.local",
-                user_metadata: {
-                    display_name: "Guest Explorer"
-                }
-            };
+            setCurrentUser(guestUser());
             console.log("[Pixel Auth] Running in Guest mode.");
             return;
         }
@@ -43,7 +50,28 @@ async function checkSession() {
 
     } catch (err) {
         console.error("[Pixel Auth] Unexpected error during session check:", err);
+        if (localStorage.getItem("pixel-guest") === "true") {
+            setCurrentUser(guestUser());
+        } else {
+            window.location.replace("login.html?session=unavailable");
+        }
     }
 }
+
+client?.auth.onAuthStateChange((event, session) => {
+    if (session?.user) {
+        setCurrentUser(session.user);
+        localStorage.removeItem("pixel-guest");
+        return;
+    }
+    if (event === "SIGNED_OUT") {
+        const guestMode = localStorage.getItem("pixel-guest") === "true";
+        setCurrentUser(guestMode ? guestUser() : null);
+        if (!guestMode) {
+            document.body?.classList.add("auth-pending");
+            window.location.replace("login.html");
+        }
+    }
+});
 
 checkSession();

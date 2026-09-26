@@ -1,100 +1,45 @@
 {
-  "about": "Creator and developer behind Pixel AI and other creative projects. Public biography will be updated with real content when provided.",
-
-  "pixelAI": [
-    {
-      "title": "Pixel AI",
-      "description": "AI assistant created and developed by Sansaar. A multi-model conversational AI workspace with a custom frontend.",
-      "category": "AI / Web Application",
-      "url": "#"
-    }
+  "summary": "Creator and developer of Pixel AI, with work spanning digital art, animation, and creative technology.",
+  "about": "Sansaar, artistically styled SansaAr, is a creator, developer, digital artist, and animator. Pixel AI brings that creative-technology practice into a multi-model assistant built with a custom web frontend and Node.js backend.",
+  "philosophy": "Art is freedom.",
+  "roles": ["Creator", "Developer", "Digital artist", "Animator"],
+  "creativeInterests": [
+    "Digital artwork",
+    "Character art",
+    "2D animation",
+    "Motion graphics",
+    "Creative technology",
+    "Experimental web projects",
+    "Game-development concepts"
   ],
-
   "projects": [
     {
       "title": "Pixel AI",
-      "description": "AI assistant created and developed by Sansaar.",
-      "category": "AI Assistant",
-      "url": "#"
+      "category": "Creative technology",
+      "description": "A multi-model AI assistant with a custom web interface, streaming responses, conversation tools, and image support.",
+      "url": "https://chat.goldyn.xyz",
+      "action": "Open Pixel AI"
     },
     {
       "title": "Mada",
-      "description": "Original animation/story project.",
-      "category": "Animation / Story",
-      "url": "#"
-    }
-  ],
-
-  "animation": [
+      "category": "Animation · Story",
+      "description": "An original story about non-identical twin brothers, separation, amnesia, identity, and the bond they do not yet understand."
+    },
     {
-      "title": "Animation Project",
-      "description": "Placeholder for animation projects by Sansaar.",
-      "category": "Animation",
-      "url": "#"
-    }
-  ],
-
-  "artwork": [
+      "title": "GroupSphere",
+      "category": "Project concept",
+      "description": "A group and project-management concept associated with Sansaar and collaborators."
+    },
     {
-      "title": "Digital Artwork",
-      "description": "Placeholder for digital artwork.",
-      "category": "Digital Art",
-      "imageUrl": "#",
-      "date": ""
+      "title": "Student Work Judger / Adviser",
+      "category": "Project",
+      "description": "A public project name listed by the creator. Further public details and a launch link are not available."
     }
   ],
-
-  "websites": [
-    {
-      "title": "Pixel AI",
-      "description": "Pixel AI web application.",
-      "url": "#"
-    }
-  ],
-
   "socials": [
     {
-      "platform": "GitHub",
-      "handle": "@sansaar",
-      "url": "#",
-      "icon": "fa-brands fa-github",
-      "colorClass": "github"
-    },
-    {
-      "platform": "YouTube",
-      "handle": "",
-      "url": "#",
-      "icon": "fa-brands fa-youtube",
-      "colorClass": "youtube"
-    },
-    {
       "platform": "Instagram",
-      "handle": "@artist.sansaar",
-      "url": "#",
-      "icon": "fa-brands fa-instagram",
-      "colorClass": "instagram"
-    },
-    {
-      "platform": "TikTok",
-      "handle": "",
-      "url": "#",
-      "icon": "fa-brands fa-tiktok",
-      "colorClass": "tiktok"
-    },
-    {
-      "platform": "X / Twitter",
-      "handle": "",
-      "url": "#",
-      "icon": "fa-brands fa-x-twitter",
-      "colorClass": "twitter"
-    }
-  ],
-
-  "publicWork": [
-    {
-      "title": "Public Portfolio",
-      "description": "Public portfolio, collaborations, and achievements will be listed here.",
-      "url": "#"
+      "handle": "@artist.sansaar"
     }
   ]
 }

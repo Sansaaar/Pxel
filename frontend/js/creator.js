@@ -1,232 +1,159 @@
-// ==========================================
-// Pixel AI 2.0: Enhanced Creator Page Controller
-// ==========================================
-// Handles:
-//   - Back navigation & Escape keyboard listener
-//   - Dynamic data loading from creatorData.json
-//   - Section population (About, Pixel AI, Projects,
-//     Animation, Artwork, Websites, Socials, Public Work)
-//   - Interactive Artwork Lightbox Modal
-// ==========================================
-
-document.addEventListener("DOMContentLoaded", () => {
-
-    // ── Navigation & Keyboard Controls ───────
+document.addEventListener("DOMContentLoaded", async () => {
     const backBtn = document.getElementById("backBtn");
-    if (backBtn) {
-        backBtn.addEventListener("click", () => {
-            window.location.href = "index.html";
-        });
-    }
+    backBtn?.addEventListener("click", () => { window.location.href = "index.html"; });
 
-    // Escape shortcut to exit back to chat
-    document.addEventListener("keydown", (e) => {
-        if (e.key === "Escape") {
-            const artModal = document.getElementById("artModal");
-            if (artModal && artModal.open) {
-                artModal.close();
-            } else {
-                window.location.href = "index.html";
-            }
+    document.addEventListener("keydown", event => {
+        if (event.key === "Escape" && !["INPUT", "TEXTAREA"].includes(document.activeElement?.tagName)) {
+            window.location.href = "index.html";
         }
     });
 
-    // Lightbox modal close listeners
-    const artModal = document.getElementById("artModal");
-    const artModalClose = document.getElementById("artModalClose");
-    if (artModalClose && artModal) {
-        artModalClose.addEventListener("click", () => artModal.close());
-        artModal.addEventListener("click", (e) => {
-            if (e.target === artModal) artModal.close();
-        });
-    }
+    try {
+        const response = await fetch("data/creatorData.json", { headers: { Accept: "application/json" } });
+        if (!response.ok) throw new Error("Creator profile unavailable");
+        const data = await response.json();
 
-    // ── Load & Render Creator Data ───────────
-    fetch("data/creatorData.json")
-        .then(res => {
-            if (!res.ok) throw new Error("Failed to load creatorData.json");
-            return res.json();
-        })
-        .then(data => {
-            renderAbout(data.about);
-            renderCards("pixelGrid",      data.pixelAI,    "pixel-card");
-            renderCards("projectsGrid",   data.projects,   "project-card");
-            renderCards("animationGrid",  data.animation,  "animation-card");
-            renderArtwork("artworkGrid",  data.artwork);
-            renderCards("websitesGrid",   data.websites,   "website-card");
-            renderSocials("socialsGrid",  data.socials);
-            renderCards("publicWorkGrid", data.publicWork,  "public-work-card");
-        })
-        .catch(err => {
-            console.error("[Creator Page] Data fetch error:", err);
-        });
-
-
-    // ── Render Helpers ───────────────────────
-
-    function renderAbout(text) {
-        const el = document.getElementById("aboutText");
-        if (el && text) el.textContent = text;
-    }
-
-    function renderCards(containerId, items, cardClass) {
-        const container = document.getElementById(containerId);
-        if (!container || !Array.isArray(items) || items.length === 0) {
-            if (container) container.innerHTML = '<p class="empty-section-msg">Content coming soon.</p>';
-            return;
-        }
-
-        container.innerHTML = "";
-        items.forEach(item => {
-            const card = document.createElement("div");
-            card.className = cardClass;
-
-            let html = "";
-            if (item.category) {
-                html += `<span class="card-category">${esc(item.category)}</span>`;
-            }
-
-            html += `<h3>${esc(item.title)}</h3>`;
-
-            if (item.description) {
-                html += `<p>${esc(item.description)}</p>`;
-            }
-
-            const hasRealUrl = item.url && item.url !== "#";
-            html += `
-                <div class="card-footer">
-                    <a class="card-link${hasRealUrl ? "" : " disabled"}" 
-                       href="${hasRealUrl ? esc(item.url) : "#"}" 
-                       ${hasRealUrl ? 'target="_blank" rel="noopener noreferrer"' : 'onclick="return false;"'}>
-                        <i class="fa-solid fa-arrow-up-right-from-square"></i>
-                        <span>${hasRealUrl ? "Open Resource" : "Link Pending"}</span>
-                    </a>
-                </div>
-            `;
-
-            card.innerHTML = html;
-            container.appendChild(card);
-        });
-    }
-
-    function renderArtwork(containerId, items) {
-        const container = document.getElementById(containerId);
-        if (!container || !Array.isArray(items) || items.length === 0) {
-            if (container) container.innerHTML = '<p class="empty-section-msg">Artwork coming soon.</p>';
-            return;
-        }
-
-        container.innerHTML = "";
-        items.forEach(item => {
-            const card = document.createElement("div");
-            card.className = "artwork-card";
-
-            let html = "";
-            const hasRealImage = item.imageUrl && item.imageUrl !== "#";
-
-            html += `
-                <div class="artwork-thumb-wrap" ${hasRealImage ? `data-fullimg="${esc(item.imageUrl)}" data-title="${esc(item.title)}" data-desc="${esc(item.description || "")}"` : ""}>
-                    ${hasRealImage 
-                        ? `<img class="artwork-thumb" src="${esc(item.imageUrl)}" alt="${esc(item.title)}" loading="lazy" />`
-                        : `<div class="artwork-placeholder-icon"><i class="fa-regular fa-image"></i></div>`}
-                </div>
-            `;
-
-            if (item.category) {
-                html += `<span class="card-category">${esc(item.category)}</span>`;
-            }
-
-            html += `<h3>${esc(item.title)}</h3>`;
-
-            if (item.description) {
-                html += `<p>${esc(item.description)}</p>`;
-            }
-
-            html += `
-                <div class="card-footer">
-                    ${item.date ? `<span class="artwork-date">${esc(item.date)}</span>` : "<span></span>"}
-                    <a class="card-link${hasRealImage ? "" : " disabled"}" 
-                       href="${hasRealImage ? esc(item.imageUrl) : "#"}" 
-                       ${hasRealImage ? 'target="_blank" rel="noopener noreferrer"' : 'onclick="return false;"'}>
-                        <i class="fa-solid fa-expand"></i>
-                        <span>${hasRealImage ? "View Full" : "Image Pending"}</span>
-                    </a>
-                </div>
-            `;
-
-            card.innerHTML = html;
-
-            // Wire lightbox trigger if real image
-            if (hasRealImage) {
-                const wrap = card.querySelector(".artwork-thumb-wrap");
-                if (wrap) {
-                    wrap.addEventListener("click", () => {
-                        openLightbox(item.imageUrl, item.title, item.description);
-                    });
-                }
-            }
-
-            container.appendChild(card);
-        });
-    }
-
-    function renderSocials(containerId, items) {
-        const container = document.getElementById(containerId);
-        if (!container || !Array.isArray(items) || items.length === 0) {
-            if (container) container.innerHTML = '<p class="empty-section-msg">Social links coming soon.</p>';
-            return;
-        }
-
-        container.innerHTML = "";
-        items.forEach(item => {
-            const hasRealUrl = item.url && item.url !== "#";
-            const link = document.createElement("a");
-            link.className = `social-card${hasRealUrl ? "" : " disabled"}`;
-            link.href = hasRealUrl ? item.url : "#";
-
-            if (hasRealUrl) {
-                link.target = "_blank";
-                link.rel = "noopener noreferrer";
-            } else {
-                link.onclick = (e) => e.preventDefault();
-            }
-
-            const colorClass = item.colorClass || "default";
-            const iconClass  = item.icon || "fa-solid fa-link";
-
-            link.innerHTML = `
-                <div class="social-icon ${esc(colorClass)}">
-                    <i class="${esc(iconClass)}"></i>
-                </div>
-                <div class="social-info">
-                    <span class="social-platform">${esc(item.platform)}</span>
-                    <span class="social-handle">${item.handle ? esc(item.handle) : (hasRealUrl ? "Connect" : "Pending")}</span>
-                </div>
-            `;
-
-            container.appendChild(link);
-        });
-    }
-
-    function openLightbox(imgUrl, title, desc) {
-        const modal = document.getElementById("artModal");
-        const modalImg = document.getElementById("artModalImg");
-        const modalTitle = document.getElementById("artModalTitle");
-        const modalDesc = document.getElementById("artModalDesc");
-
-        if (!modal || !modalImg) return;
-
-        modalImg.src = imgUrl;
-        if (modalTitle) modalTitle.textContent = title || "Artwork";
-        if (modalDesc) modalDesc.textContent = desc || "";
-
-        modal.showModal();
-    }
-
-    function esc(str) {
-        if (!str) return "";
-        const div = document.createElement("div");
-        div.textContent = str;
-        return div.innerHTML;
+        setText("creatorSummary", data.summary);
+        setText("aboutText", data.about);
+        setText("creatorPhilosophy", data.philosophy, true);
+        renderTags("roleList", data.roles, "role-tag");
+        renderTags("creativeList", data.creativeInterests, "creative-tag");
+        renderProjects(data.projects);
+        renderSocials(data.socials);
+    } catch (error) {
+        console.error("[Creator Page] Profile load failed:", error);
+        const projects = document.getElementById("projectsGrid");
+        if (projects) projects.textContent = "Creator details could not be loaded.";
     }
 });
+
+function setText(id, value, isQuote = false) {
+    const element = document.getElementById(id);
+    if (!element || typeof value !== "string") return;
+    element.textContent = value;
+    if (isQuote) element.hidden = !value.trim();
+}
+
+function renderTags(containerId, values, className) {
+    const container = document.getElementById(containerId);
+    if (!container || !Array.isArray(values)) return;
+    const fragment = document.createDocumentFragment();
+    values.forEach(value => {
+        if (typeof value !== "string" || !value.trim()) return;
+        const tag = document.createElement("li");
+        tag.className = className;
+        tag.textContent = value;
+        fragment.appendChild(tag);
+    });
+    container.replaceChildren(fragment);
+}
+
+function safePublicUrl(value) {
+    if (typeof value !== "string" || !value.trim()) return null;
+    try {
+        const url = new URL(value, window.location.href);
+        if (!new Set(["http:", "https:"]).has(url.protocol)) return null;
+        return url.href;
+    } catch {
+        return null;
+    }
+}
+
+function renderProjects(projects) {
+    const container = document.getElementById("projectsGrid");
+    if (!container) return;
+    if (!Array.isArray(projects) || !projects.length) {
+        container.textContent = "No public projects are listed yet.";
+        return;
+    }
+
+    const icons = {
+        "Pixel AI": "fa-solid fa-sparkles",
+        "Mada": "fa-solid fa-film",
+        "GroupSphere": "fa-solid fa-people-group"
+    };
+    const fragment = document.createDocumentFragment();
+    projects.forEach(project => {
+        if (!project || typeof project.title !== "string") return;
+        const article = document.createElement("article");
+        article.className = "project-item";
+
+        const icon = document.createElement("span");
+        icon.className = "project-icon";
+        const iconElement = document.createElement("i");
+        iconElement.className = icons[project.title] || "fa-solid fa-diagram-project";
+        iconElement.setAttribute("aria-hidden", "true");
+        icon.appendChild(iconElement);
+
+        const category = document.createElement("span");
+        category.className = "project-category";
+        category.textContent = typeof project.category === "string" ? project.category : "Project";
+
+        const title = document.createElement("h3");
+        title.textContent = project.title;
+        const description = document.createElement("p");
+        description.textContent = typeof project.description === "string" ? project.description : "";
+
+        article.append(icon, category, title, description);
+        const href = safePublicUrl(project.url);
+        if (href) {
+            const link = document.createElement("a");
+            link.className = "project-link";
+            link.href = href;
+            link.textContent = typeof project.action === "string" ? project.action : "Open project";
+            if (new URL(href).origin !== window.location.origin) {
+                link.target = "_blank";
+                link.rel = "noopener noreferrer";
+            }
+            const arrow = document.createElement("i");
+            arrow.className = "fa-solid fa-arrow-up-right-from-square";
+            arrow.setAttribute("aria-hidden", "true");
+            link.appendChild(arrow);
+            article.appendChild(link);
+        }
+        fragment.appendChild(article);
+    });
+    container.replaceChildren(fragment);
+}
+
+function renderSocials(socials) {
+    const container = document.getElementById("socialsGrid");
+    if (!container) return;
+    if (!Array.isArray(socials) || !socials.length) {
+        container.textContent = "No public social profiles are listed.";
+        return;
+    }
+
+    const fragment = document.createDocumentFragment();
+    socials.forEach(profile => {
+        if (!profile || typeof profile.platform !== "string") return;
+        const href = safePublicUrl(profile.url);
+        const card = document.createElement(href ? "a" : "div");
+        card.className = "social-profile";
+        if (href) {
+            card.href = href;
+            card.target = "_blank";
+            card.rel = "noopener noreferrer";
+        }
+        const icon = document.createElement("i");
+        icon.className = "fa-brands fa-instagram";
+        icon.setAttribute("aria-hidden", "true");
+        const text = document.createElement("span");
+        const name = document.createElement("strong");
+        name.textContent = profile.platform;
+        const handle = document.createElement("small");
+        handle.textContent = typeof profile.handle === "string" && profile.handle
+            ? profile.handle
+            : "Public handle not listed";
+        text.append(name, handle);
+        card.append(icon, text);
+        if (!href) {
+            const note = document.createElement("small");
+            note.className = "social-link-note";
+            note.textContent = "Profile link not listed";
+            card.appendChild(note);
+        }
+        fragment.appendChild(card);
+    });
+    container.replaceChildren(fragment);
+}

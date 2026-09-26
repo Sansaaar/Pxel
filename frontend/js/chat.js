@@ -5,14 +5,29 @@
 (function() {
     let activeAbortController = null;
     let isGenerating = false;
+    let editingMessage = null;
+    const attachmentCache = new Map();
 
     const textarea = document.getElementById("promptInput");
     const sendBtn = document.getElementById("sendBtn");
     const stopBtn = document.getElementById("stopBtn");
     const chatArea = document.getElementById("chatArea");
     const chatContainer = document.querySelector(".chat-container");
+    const scrollToBottomBtn = document.getElementById("aiScrollToBottomBtn");
     const welcome = document.querySelector(".welcome");
     const cursorGlow = document.querySelector(".cursor-glow");
+    const editNotice = document.getElementById("chatEditNotice");
+    const cancelEditBtn = document.getElementById("cancelChatEditBtn");
+
+    function getAnonymousSessionId() {
+        let id = localStorage.getItem("pixel-anonymous-session");
+        if (!id) {
+            id = crypto.randomUUID();
+            localStorage.setItem("pixel-anonymous-session", id);
+        }
+        return id;
+    }
+    window.getPixelAnonymousSessionId = getAnonymousSessionId;
 
     // Interactive cursor glow for fine pointers
     if (cursorGlow && window.matchMedia("(pointer: fine)").matches) {
@@ -26,10 +41,18 @@
         return localStorage.getItem("pixel-auto-scroll") !== "false";
     }
 
+    function updateScrollToBottomButton() {
+        if (!scrollToBottomBtn || !chatContainer) return;
+        const hasMessages = Boolean(chatArea?.querySelector(".message"));
+        const distanceFromBottom = chatContainer.scrollHeight - chatContainer.scrollTop - chatContainer.clientHeight;
+        scrollToBottomBtn.hidden = !hasMessages || distanceFromBottom < 120;
+    }
+
     function scrollToLatest() {
         if (shouldAutoScroll() && chatContainer) {
             chatContainer.scrollTop = chatContainer.scrollHeight;
         }
+        updateScrollToBottomButton();
     }
 
     function setGeneratingState(generating) {
@@ -71,12 +94,10 @@
         `;
     }
 
-    function createUserActions() {
+    function createUserActions(canEdit = true) {
         return `
             <div class="user-message-actions">
-                <button class="user-action-btn" type="button" data-user-action="edit" title="Edit message">
-                    <i class="fa-solid fa-pen"></i>
-                </button>
+                ${canEdit ? `<button class="user-action-btn" type="button" data-user-action="edit" title="Edit message" aria-label="Edit message"><i class="fa-solid fa-pen"></i></button>` : ""}
                 <button class="user-action-btn" type="button" data-user-action="copy" title="Copy text">
                     <i class="fa-regular fa-copy"></i>
                 </button>
@@ -84,12 +105,15 @@
         `;
     }
 
-    function addMessageToUI(text, sender, { streaming = false, attachments = [] } = {}) {
+    function addMessageToUI(text, sender, { streaming = false, attachments = [], historyIndex, createdAt } = {}) {
         if (!chatArea) return null;
 
         const messageEl = document.createElement("div");
         messageEl.className = `message ${sender}`;
         messageEl.dataset.rawText = text || "";
+        if (Number.isInteger(historyIndex)) messageEl.dataset.historyIndex = String(historyIndex);
+        const messageTime = createdAt || new Date().toISOString();
+        messageEl.dataset.createdAt = messageTime;
 
         if (sender === "ai") {
             messageEl.innerHTML = `
@@ -117,7 +141,8 @@
             if (attachments && attachments.length > 0) {
                 const imagesHtml = attachments
                     .filter(a => a.isImage && a.data)
-                    .map(a => `<div class="user-img-wrapper"><img src="${a.data}" class="user-img-thumb" alt="${escapeHtml(a.name)}" onclick="window.open('${a.data}', '_blank')"></div>`)
+                    .filter(a => /^data:image\/(?:png|jpeg|gif|webp);base64,[a-z0-9+/]+={0,2}$/i.test(a.data))
+                    .map(a => `<div class="user-img-wrapper"><img src="${a.data}" class="user-img-thumb" alt="${escapeHtml(a.name)}" loading="lazy"></div>`)
                     .join("");
 
                 const docsHtml = attachments
@@ -141,9 +166,17 @@
                         ${attachmentsHtml}
                         ${textHtml}
                     </div>
-                    ${createUserActions()}
+                    ${createUserActions(!attachments.length)}
                 </div>
             `;
+        }
+
+        if (sender !== "thinking") {
+            const stamp = document.createElement("time");
+            stamp.className = "message-timestamp";
+            stamp.dateTime = messageTime;
+            stamp.textContent = new Date(messageTime).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+            messageEl.querySelector(".ai-message-body, .user-message-body")?.append(stamp);
         }
 
         chatArea.appendChild(messageEl);
@@ -182,7 +215,7 @@
         if (el) el.remove();
     }
 
-    function renderErrorState(errorType, customMessage = "", originalPrompt = "") {
+    function renderErrorState(errorType, customMessage = "", originalPrompt = "", retryContext = null) {
         removeThinking();
         const errorEl = document.createElement("div");
         errorEl.className = "message ai error-state";
@@ -201,6 +234,12 @@
             message = customMessage || "This model is currently experiencing high demand. Switch to Auto for instant response.";
             actionBtnText = "Switch to Auto & Retry";
             actionHandler = "switch-auto";
+        } else if (errorType === "rate-limit") {
+            title = "A short pause is needed";
+            message = "Too many requests were sent. Wait a moment, then try again.";
+        } else if (errorType === "invalid") {
+            title = "Message could not be sent";
+            message = customMessage || "Check the message and attachments, then try again.";
         }
 
         errorEl.innerHTML = `
@@ -228,8 +267,12 @@
                 }
             }
             if (originalPrompt) {
-                if (textarea) textarea.value = originalPrompt;
-                await sendMessage();
+                if (retryContext?.userElement) {
+                    await retryFromUserMessage(retryContext.userElement, originalPrompt);
+                } else {
+                    if (textarea) textarea.value = originalPrompt;
+                    await sendMessage();
+                }
             }
         });
 
@@ -240,10 +283,10 @@
     // ------------------------------------------
     // Send Message Lifecycle
     // ------------------------------------------
-    async function sendMessage() {
+    async function sendMessage(options = {}) {
         if (!textarea) return;
         const text = textarea.value.trim();
-        const attachments = typeof window.getUploadedAttachments === "function"
+        let attachments = typeof window.getUploadedAttachments === "function"
             ? window.getUploadedAttachments()
             : [];
 
@@ -262,13 +305,37 @@
             }
         }
 
+        let replacement = options?.replaceHistory ? options : null;
+        if (editingMessage) {
+            const historyIndex = editingMessage.historyIndex;
+            replacement = {
+                replaceHistory: true,
+                history: window.truncateLocalMessages?.(convId, historyIndex) || [],
+                truncateFrom: editingMessage.createdAt
+            };
+            attachments = attachments.length ? attachments : (attachmentCache.get(editingMessage.createdAt) || []);
+            removeMessagesFrom(historyIndex);
+            editingMessage = null;
+            if (editNotice) editNotice.hidden = true;
+        }
+
+        if (replacement) {
+            window.truncateLocalMessages?.(convId, replacement.history.length);
+            removeMessagesFrom(replacement.history.length);
+            if (Array.isArray(replacement.attachments) && !attachments.length) attachments = replacement.attachments;
+        }
+
+        const historySource = replacement?.history || window.getLocalMessages?.(convId) || [];
+        const requestHistory = historySource.slice(-19)
+            .filter(entry => ["user", "assistant"].includes(entry.role) && typeof entry.content === "string")
+            .map(entry => ({ role: entry.role, content: entry.content }));
+
         if (welcome) welcome.classList.add("hide");
 
-        // Add user message to UI with attached thumbnails
-        addMessageToUI(text, "user", { attachments });
-        if (typeof window.recordLocalMessage === "function") {
-            window.recordLocalMessage(convId, "user", text);
-        }
+        const historyIndex = window.getLocalMessages?.(convId).length || 0;
+        const userEntry = window.recordLocalMessage?.(convId, "user", text);
+        addMessageToUI(text, "user", { attachments, historyIndex, createdAt: userEntry?.created_at });
+        if (attachments.length && userEntry?.created_at) attachmentCache.set(userEntry.created_at, attachments);
 
         // Reset input and attachments
         textarea.value = "";
@@ -290,14 +357,27 @@
         const apiBase = window.API_BASE || "";
 
         try {
+            const headers = { "Content-Type": "application/json", "X-Pixel-Session-Id": getAnonymousSessionId() };
+            try {
+                const { data } = await window.supabaseClient?.auth.getSession();
+                if (data?.session?.access_token) headers.Authorization = `Bearer ${data.session.access_token}`;
+            } catch (error) {
+                console.warn("[Pixel Chat] Could not restore the account session for this request.");
+            }
+
             const response = await fetch(`${apiBase}/api/chat`, {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers,
                 body: JSON.stringify({
                     conversationId: convId,
                     message: text,
                     model: currentModel.id,
-                    attachments: attachments
+                    attachments,
+                    history: requestHistory,
+                    ...(replacement ? {
+                        replaceHistory: true,
+                        truncateFrom: replacement.truncateFrom
+                    } : {})
                 }),
                 signal: activeAbortController.signal
             });
@@ -310,12 +390,22 @@
                     // non-json response
                 }
 
-                if (response.status === 404 || (errData?.error?.code === "MODEL_UNAVAILABLE")) {
-                    renderErrorState("unavailable", errData?.error?.message, text);
+                const errorCode = errData?.error?.code;
+                const userElement = chatArea.querySelector(`.message.user[data-history-index="${historyIndex}"]`);
+                const retryContext = { userElement };
+                if (response.status === 404 || errorCode === "MODEL_UNAVAILABLE") {
+                    renderErrorState("unavailable", errData?.error?.message, text, retryContext);
                     return;
                 }
-
-                throw new Error(errData?.error?.message || `Server responded with status ${response.status}`);
+                if (response.status === 429 || errorCode === "RATE_LIMITED") {
+                    renderErrorState("rate-limit", "", text, retryContext);
+                    return;
+                }
+                if (["INVALID_REQUEST", "INVALID_ATTACHMENT", "MODEL_UNSUPPORTED_ATTACHMENT", "INVALID_MODEL", "MESSAGE_TOO_LARGE"].includes(errorCode)) {
+                    renderErrorState("invalid", errData?.error?.message, "", null);
+                    return;
+                }
+                throw new Error("Pixel could not complete this request.");
             }
 
             if (!response.body) {
@@ -323,11 +413,15 @@
             }
 
             removeThinking();
-            const aiMessageEl = addMessageToUI("", "ai", { streaming: true });
+            const assistantIndex = window.getLocalMessages?.(convId).length || 0;
+            const aiMessageEl = addMessageToUI("", "ai", { streaming: true, historyIndex: assistantIndex });
             const contentEl = aiMessageEl.querySelector(".message-content");
+            const streamText = document.createTextNode("");
+            contentEl.replaceChildren(streamText);
             const reader = response.body.getReader();
             const decoder = new TextDecoder();
             let fullText = "";
+            let scrollScheduled = false;
 
             while (true) {
                 const { done, value } = await reader.read();
@@ -335,9 +429,16 @@
 
                 const chunk = decoder.decode(value, { stream: true });
                 fullText += chunk;
-                contentEl.textContent = fullText;
+                streamText.appendData(chunk);
                 aiMessageEl.dataset.rawText = fullText;
-                scrollToLatest();
+                if (!scrollScheduled) {
+                    scrollScheduled = true;
+                    requestAnimationFrame(() => {
+                        scrollScheduled = false;
+                        if (shouldAutoScroll()) scrollToLatest();
+                        else updateScrollToBottomButton();
+                    });
+                }
             }
 
             fullText += decoder.decode();
@@ -349,10 +450,27 @@
                 : escapeHtml(fullText);
             window.typesetMath?.(contentEl);
             contentEl.classList.remove("stream");
+            const usedModelId = response.headers.get("X-Pixel-Model");
+            if (usedModelId) {
+                const model = window.getAvailableModels?.().find(item => item.id === usedModelId);
+                const label = document.createElement("div");
+                label.className = "response-model-meta";
+                label.textContent = `${currentModel.id === "auto" ? "Auto · " : ""}${model?.name || usedModelId}${response.headers.get("X-Pixel-Fallback") === "true" ? " · fallback" : ""}`;
+                aiMessageEl.querySelector(".ai-message-body")?.append(label);
+            }
             scrollToLatest();
 
             if (typeof window.recordLocalMessage === "function") {
-                window.recordLocalMessage(convId, "assistant", fullText);
+                const assistantEntry = window.recordLocalMessage(convId, "assistant", fullText);
+                if (assistantEntry) {
+                    aiMessageEl.dataset.historyIndex = String(assistantIndex);
+                    aiMessageEl.dataset.createdAt = assistantEntry.created_at;
+                    const stamp = aiMessageEl.querySelector(".message-timestamp");
+                    if (stamp) {
+                        stamp.dateTime = assistantEntry.created_at;
+                        stamp.textContent = new Date(assistantEntry.created_at).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+                    }
+                }
             }
 
             if (isNewConversation && typeof window.renameConversation === "function") {
@@ -374,15 +492,44 @@
                 }
             } else if (!navigator.onLine) {
                 renderErrorState("network", "", text);
-            } else {
-                console.error("[Pixel Chat] Generation error:", err);
-                renderErrorState("server", err.message, text);
+                } else {
+                    console.error("[Pixel Chat] Generation error:", err);
+                renderErrorState("server", "Pixel could not complete this request. Please try again.", text, {
+                    userElement: chatArea.querySelector(`.message.user[data-history-index="${historyIndex}"]`)
+                });
             }
         } finally {
             activeAbortController = null;
             setGeneratingState(false);
-            if (textarea) textarea.focus();
+        if (textarea) textarea.focus();
         }
+    }
+
+    function removeMessagesFrom(index) {
+        chatArea?.querySelectorAll(".message[data-history-index]").forEach(message => {
+            if (Number(message.dataset.historyIndex) >= index) {
+                window.clearMathTypesetting?.(message);
+                message.remove();
+            }
+        });
+    }
+
+    function cancelMessageEdit() {
+        editingMessage = null;
+        if (editNotice) editNotice.hidden = true;
+    }
+
+    async function retryFromUserMessage(userElement, prompt) {
+        if (!userElement || isGenerating) return;
+        const conversationId = window.getCurrentConversationId?.();
+        const index = Number(userElement.dataset.historyIndex);
+        const timestamp = userElement.dataset.createdAt;
+        const attachments = attachmentCache.get(timestamp) || [];
+        const history = window.truncateLocalMessages?.(conversationId, index) || [];
+        removeMessagesFrom(index);
+        cancelMessageEdit();
+        if (textarea) textarea.value = prompt;
+        await sendMessage({ replaceHistory: true, history, truncateFrom: timestamp, attachments });
     }
 
     function stopGeneration() {
@@ -392,6 +539,24 @@
         }
         setGeneratingState(false);
         removeThinking();
+    }
+
+    async function clearServerConversation(conversationId) {
+        if (!conversationId) return;
+        const headers = {
+            "Content-Type": "application/json",
+            "X-Pixel-Session-Id": getAnonymousSessionId()
+        };
+        try {
+            const { data } = await window.supabaseClient?.auth.getSession();
+            if (data?.session?.access_token) headers.Authorization = `Bearer ${data.session.access_token}`;
+        } catch { }
+        const response = await fetch(`${window.API_BASE || ""}/api/chat/clear`, {
+            method: "POST",
+            headers,
+            body: JSON.stringify({ conversationId })
+        });
+        if (!response.ok) throw new Error("Unable to clear server-side conversation data.");
     }
 
     // ------------------------------------------
@@ -429,9 +594,7 @@
                     : null;
                 const promptToRetry = prevUser?.dataset.rawText;
                 if (promptToRetry) {
-                    messageEl.remove();
-                    if (textarea) textarea.value = promptToRetry;
-                    await sendMessage();
+                    await retryFromUserMessage(prevUser, promptToRetry);
                 }
             }
 
@@ -463,7 +626,13 @@
             }
 
             if (action === "edit") {
-                if (textarea) {
+                if (textarea && userMsgEl && !userMsgEl.querySelector(".user-attachments-grid")) {
+                    editingMessage = {
+                        element: userMsgEl,
+                        historyIndex: Number(userMsgEl.dataset.historyIndex),
+                        createdAt: userMsgEl.dataset.createdAt
+                    };
+                    if (editNotice) editNotice.hidden = false;
                     textarea.value = rawText;
                     textarea.style.height = "auto";
                     textarea.style.height = `${Math.min(textarea.scrollHeight, 200)}px`;
@@ -486,13 +655,34 @@
         }
     });
 
+    document.addEventListener("keydown", (event) => {
+        const starterCard = event.target.closest?.(".starter-card");
+        if (!starterCard || (event.key !== "Enter" && event.key !== " ")) return;
+        event.preventDefault();
+        starterCard.click();
+    });
+
     // ------------------------------------------
     // Composer Setup
     // ------------------------------------------
     window.addEventListener("DOMContentLoaded", () => {
+        chatContainer?.addEventListener("scroll", updateScrollToBottomButton, { passive: true });
+        scrollToBottomBtn?.addEventListener("click", () => {
+            if (chatContainer) chatContainer.scrollTop = chatContainer.scrollHeight;
+        });
+
         if (sendBtn) {
             sendBtn.addEventListener("click", sendMessage);
         }
+
+        cancelEditBtn?.addEventListener("click", () => {
+            cancelMessageEdit();
+            if (textarea) {
+                textarea.value = "";
+                textarea.style.height = "auto";
+                textarea.focus();
+            }
+        });
 
         if (stopBtn) {
             stopBtn.addEventListener("click", stopGeneration);
@@ -514,6 +704,8 @@
                 textarea.style.height = `${Math.min(textarea.scrollHeight, 200)}px`;
             });
         }
+
+        updateScrollToBottomButton();
     });
 
     function escapeHtml(str) {
@@ -530,4 +722,6 @@
     window.addMessageToUI = addMessageToUI;
     window.sendMessage = sendMessage;
     window.stopGeneration = stopGeneration;
+    window.cancelChatEdit = cancelMessageEdit;
+    window.clearServerConversation = clearServerConversation;
 })();

@@ -3,243 +3,112 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Sansaar — Creator Portfolio | Pixel AI</title>
-    <link rel="icon" type="image/x-icon" href="assets/pixel.png">
+    <meta name="theme-color" content="#0A0A0A" />
+    <meta name="description" content="The public creator profile and selected projects of Sansaar, creator of Pixel AI." />
+    <title>Sansaar — Creator | Pixel AI</title>
+    <link rel="icon" type="image/x-icon" href="assets/pixel.png" />
     <link rel="stylesheet" href="css/creator.css" />
-    <!-- Font Awesome for rich icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" />
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 </head>
 <body>
-
-    <!-- Subtle Ambient Glow -->
-    <div class="ambient-glow" aria-hidden="true"></div>
-
-    <!-- Sticky Navigation Bar -->
     <header class="creator-nav">
         <div class="nav-left">
-            <button id="backBtn" class="nav-btn" title="Back to Chat (Esc)">
-                <i class="fa-solid fa-arrow-left"></i>
-                <span class="back-label">Chat</span>
-            </button>
-            <div class="nav-brand">
+            <a id="backBtn" class="nav-btn" href="index.html" aria-label="Back to Pixel AI">
+                <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
+                <span>Pixel AI</span>
+            </a>
+            <a class="nav-brand" href="#top" aria-label="Sansaar creator profile">
                 <span class="nav-title">Sansaar</span>
                 <span class="nav-badge">Creator</span>
-            </div>
-        </div>
-
-        <nav class="nav-links" aria-label="Page sections">
-            <a href="#aboutSection" class="nav-link-item">About</a>
-            <a href="#pixelSection" class="nav-link-item">Pixel AI</a>
-            <a href="#projectsSection" class="nav-link-item">Projects</a>
-            <a href="#artworkSection" class="nav-link-item">Artwork</a>
-            <a href="#animationSection" class="nav-link-item">Animation</a>
-            <a href="#socialsSection" class="nav-link-item">Socials</a>
-        </nav>
-
-        <div class="nav-right">
-            <a href="index.html" class="nav-chat-pill">
-                <i class="fa-solid fa-sparkles"></i>
-                <span>Open Pixel AI</span>
             </a>
         </div>
+        <nav class="nav-links" aria-label="Creator page sections">
+            <a href="#aboutSection">About</a>
+            <a href="#projectsSection">Projects</a>
+            <a href="#creativeSection">Creative work</a>
+            <a href="#socialsSection">Social</a>
+        </nav>
+        <a class="nav-chat-link" href="index.html">
+            <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i>
+            <span>Open Pixel AI</span>
+        </a>
     </header>
 
-    <!-- Main Container -->
-    <main class="creator-main">
+    <main id="top" class="creator-main">
+        <section class="creator-hero" aria-labelledby="creatorName">
+            <img class="hero-mark" src="assets/pixel.png" alt="Pixel AI mark" width="64" height="64" />
+            <p class="hero-eyebrow">Creator profile <span aria-hidden="true">/</span> SansaAr</p>
+            <h1 id="creatorName">Sansaar</h1>
+            <p id="creatorSummary" class="hero-summary">Creator and developer of Pixel AI.</p>
+            <ul id="roleList" class="role-list" aria-label="Creator roles"></ul>
+        </section>
 
-        <!-- ======================== Hero Section ======================== -->
-        <section class="creator-hero">
-            <div class="hero-avatar-wrapper">
-                <div class="hero-avatar">
-                    <span class="hero-initial">S</span>
-                </div>
-                <div class="hero-status-pill">
-                    <span class="status-dot"></span>
-                    <span>Building & Creating</span>
+        <section class="creator-section about-section" id="aboutSection">
+            <div class="section-heading">
+                <span class="section-index">01</span>
+                <div>
+                    <h2>About</h2>
+                    <p>A public profile, built from the work.</p>
                 </div>
             </div>
-
-            <h1 class="hero-name">Sansaar</h1>
-            <p class="hero-subtitle">Creator & Developer of Pixel AI &middot; Digital Art &middot; Animation</p>
-
-            <!-- Quick Stat Badges -->
-            <div class="hero-stats">
-                <div class="stat-badge">
-                    <i class="fa-solid fa-microchip"></i>
-                    <span>AI Engineering</span>
-                </div>
-                <div class="stat-badge">
-                    <i class="fa-solid fa-palette"></i>
-                    <span>Digital Art</span>
-                </div>
-                <div class="stat-badge">
-                    <i class="fa-solid fa-film"></i>
-                    <span>Animation</span>
-                </div>
-                <div class="stat-badge">
-                    <i class="fa-solid fa-code"></i>
-                    <span>Web Systems</span>
-                </div>
+            <div class="about-content">
+                <p id="aboutText"></p>
+                <blockquote id="creatorPhilosophy"></blockquote>
             </div>
         </section>
 
-        <!-- ======================== About Section ======================== -->
-        <section class="creator-section" id="aboutSection">
-            <div class="section-header">
-                <div class="section-icon-box">
-                    <i class="fa-solid fa-user"></i>
-                </div>
-                <div class="section-header-text">
-                    <h2>About Sansaar</h2>
-                    <p>Background, creative vision, and active pursuits</p>
-                </div>
-            </div>
-            <div class="about-card">
-                <p id="aboutText">[Public biography will be placed here.]</p>
-            </div>
-        </section>
-
-        <!-- ======================== Pixel AI Section ======================== -->
-        <section class="creator-section" id="pixelSection">
-            <div class="section-header">
-                <div class="section-icon-box">
-                    <i class="fa-solid fa-sparkles"></i>
-                </div>
-                <div class="section-header-text">
-                    <h2>Pixel AI</h2>
-                    <p>Next-generation multi-model AI assistant workspace</p>
-                </div>
-            </div>
-            <div class="cards-grid" id="pixelGrid">
-                <!-- Dynamically rendered -->
-            </div>
-        </section>
-
-        <!-- ======================== Projects Section ======================== -->
         <section class="creator-section" id="projectsSection">
-            <div class="section-header">
-                <div class="section-icon-box">
-                    <i class="fa-solid fa-diagram-project"></i>
-                </div>
-                <div class="section-header-text">
-                    <h2>Projects</h2>
-                    <p>Software, tools, and technical experiments</p>
+            <div class="section-heading">
+                <span class="section-index">02</span>
+                <div>
+                    <h2>Selected projects</h2>
+                    <p>Software and story worlds.</p>
                 </div>
             </div>
-            <div class="cards-grid" id="projectsGrid">
-                <!-- Dynamically rendered -->
-            </div>
+            <div id="projectsGrid" class="projects-grid"></div>
         </section>
 
-        <!-- ======================== Artwork Section ======================== -->
-        <section class="creator-section" id="artworkSection">
-            <div class="section-header">
-                <div class="section-icon-box">
-                    <i class="fa-solid fa-palette"></i>
-                </div>
-                <div class="section-header-text">
-                    <h2>Artwork & Illustrations</h2>
-                    <p>Digital paintings, concept art, and visual creations</p>
+        <section class="creator-section creative-section" id="creativeSection">
+            <div class="section-heading">
+                <span class="section-index">03</span>
+                <div>
+                    <h2>Creative work</h2>
+                    <p>Ideas across art, motion, and technology.</p>
                 </div>
             </div>
-            <div class="cards-grid" id="artworkGrid">
-                <!-- Dynamically rendered -->
-            </div>
+            <ul id="creativeList" class="creative-list"></ul>
+            <a id="artworkLink" class="artwork-access" href="index.html#artworks">
+                <span class="artwork-access-mark"><i class="fa-solid fa-palette" aria-hidden="true"></i></span>
+                <span><strong>Artwork gallery</strong><small>Open the public Pixel gallery</small></span>
+                <i class="fa-solid fa-arrow-up-right-from-square artwork-access-arrow" aria-hidden="true"></i>
+            </a>
         </section>
 
-        <!-- ======================== Animation Section ======================== -->
-        <section class="creator-section" id="animationSection">
-            <div class="section-header">
-                <div class="section-icon-box">
-                    <i class="fa-solid fa-film"></i>
-                </div>
-                <div class="section-header-text">
-                    <h2>Animation & Storytelling</h2>
-                    <p>Original animated projects, motion design, and world building</p>
+        <section class="creator-section socials-section" id="socialsSection">
+            <div class="section-heading">
+                <span class="section-index">04</span>
+                <div>
+                    <h2>Social</h2>
+                    <p>Only profiles listed in the public creator profile appear here.</p>
                 </div>
             </div>
-            <div class="cards-grid" id="animationGrid">
-                <!-- Dynamically rendered -->
-            </div>
+            <div id="socialsGrid" class="socials-grid"></div>
         </section>
 
-        <!-- ======================== Websites Section ======================== -->
-        <section class="creator-section" id="websitesSection">
-            <div class="section-header">
-                <div class="section-icon-box">
-                    <i class="fa-solid fa-globe"></i>
-                </div>
-                <div class="section-header-text">
-                    <h2>Websites & Portals</h2>
-                    <p>Live web deployments and creator platforms</p>
-                </div>
-            </div>
-            <div class="cards-grid" id="websitesGrid">
-                <!-- Dynamically rendered -->
-            </div>
+        <section class="pixel-connection" aria-label="Pixel AI">
+            <img src="assets/pixel.png" alt="" width="38" height="38" />
+            <div><span>Made by Sansaar</span><strong>Pixel AI</strong></div>
+            <a href="index.html">Visit Pixel AI <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></a>
         </section>
-
-        <!-- ======================== Socials Section ======================== -->
-        <section class="creator-section" id="socialsSection">
-            <div class="section-header">
-                <div class="section-icon-box">
-                    <i class="fa-solid fa-share-nodes"></i>
-                </div>
-                <div class="section-header-text">
-                    <h2>Social Profiles</h2>
-                    <p>Connect and follow creator updates across official channels</p>
-                </div>
-            </div>
-            <div class="socials-grid" id="socialsGrid">
-                <!-- Dynamically rendered -->
-            </div>
-        </section>
-
-        <!-- ======================== Public Work Section ======================== -->
-        <section class="creator-section" id="publicWorkSection">
-            <div class="section-header">
-                <div class="section-icon-box">
-                    <i class="fa-solid fa-briefcase"></i>
-                </div>
-                <div class="section-header-text">
-                    <h2>Public Work & Collaborations</h2>
-                    <p>Open source contributions, milestones, and collaborations</p>
-                </div>
-            </div>
-            <div class="cards-grid" id="publicWorkGrid">
-                <!-- Dynamically rendered -->
-            </div>
-        </section>
-
     </main>
 
-    <!-- Refined Footer -->
     <footer class="creator-footer">
-        <div class="footer-content">
-            <div class="footer-brand">
-                <strong>Sansaar</strong> &middot; Creator of Pixel AI
-            </div>
-            <p class="footer-note">All links and creator resources conform to public disclosure policies.</p>
-        </div>
+        <a href="index.html">Pixel AI</a>
+        <span>Sansaar <span aria-hidden="true">·</span> SansaAr</span>
     </footer>
-
-    <!-- Artwork Modal for Lightbox preview -->
-    <dialog id="artModal" class="art-modal" aria-labelledby="artModalTitle">
-        <div class="art-modal-content">
-            <button class="art-modal-close" id="artModalClose" type="button" aria-label="Close image preview">
-                <i class="fa-solid fa-xmark"></i>
-            </button>
-            <img id="artModalImg" src="" alt="Artwork Preview" class="art-modal-img">
-            <div class="art-modal-details">
-                <h3 id="artModalTitle"></h3>
-                <p id="artModalDesc"></p>
-            </div>
-        </div>
-    </dialog>
 
     <script src="js/creator.js"></script>
 </body>

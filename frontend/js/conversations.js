@@ -253,6 +253,7 @@
     // ------------------------------------------
     async function loadMessages(conversationId) {
         if (!conversationId) return;
+        window.cancelChatEdit?.();
 
         currentConversation = conversationId;
         localStorage.setItem("currentConversation", conversationId);
@@ -297,9 +298,13 @@
             return;
         }
 
-        messages.forEach(msg => {
+        messages.forEach((msg, index) => {
             if (typeof window.addMessageToUI === "function") {
-                window.addMessageToUI(msg.content, msg.role === "assistant" ? "ai" : "user");
+                window.addMessageToUI(msg.content, msg.role === "assistant" ? "ai" : "user", {
+                    historyIndex: index,
+                    createdAt: msg.created_at,
+                    attachments: Array.isArray(msg.attachments) ? msg.attachments : []
+                });
             }
         });
     }
@@ -308,6 +313,7 @@
     // New Chat
     // ------------------------------------------
     function newChat() {
+        window.cancelChatEdit?.();
         currentConversation = null;
         localStorage.removeItem("currentConversation");
 
@@ -370,6 +376,12 @@
     async function deleteConversation(id) {
         if (!id) return;
 
+        try {
+            await window.clearServerConversation?.(id);
+        } catch (error) {
+            console.warn("[Pixel Convs] Could not clear server-side chat memory:", error);
+        }
+
         localConversations = localConversations.filter(c => c.id !== id);
         delete localMessages[id];
         saveLocalData();
@@ -421,15 +433,43 @@
     }
 
     function recordLocalMessage(convId, role, content) {
-        if (!convId) return;
+        if (!convId) return null;
         if (!localMessages[convId]) localMessages[convId] = [];
-        localMessages[convId].push({
+        const entry = {
+            id: generateUUID(),
             conversation_id: convId,
             role,
             content,
             created_at: new Date().toISOString()
-        });
+        };
+        localMessages[convId].push(entry);
         saveLocalData();
+        return entry;
+    }
+
+    function getLocalMessages(convId) {
+        return convId && Array.isArray(localMessages[convId])
+            ? localMessages[convId].map(message => ({ ...message }))
+            : [];
+    }
+
+    function truncateLocalMessages(convId, index) {
+        if (!convId || !Array.isArray(localMessages[convId])) return [];
+        const keep = Math.max(0, Number(index) || 0);
+        localMessages[convId] = localMessages[convId].slice(0, keep);
+        saveLocalData();
+        return getLocalMessages(convId);
+    }
+
+    async function clearConversationMessages(convId) {
+        if (!convId) return;
+        delete localMessages[convId];
+        saveLocalData();
+        const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(convId);
+        if (isUUID && window.supabaseClient) {
+            const { error } = await window.supabaseClient.from("messages").delete().eq("conversation_id", convId);
+            if (error) console.warn("[Pixel Convs] Could not clear saved messages:", error.message);
+        }
     }
 
     // Helper: Context menu
@@ -488,6 +528,9 @@
     window.clearAllConversations = clearAllConversations;
     window.togglePin = togglePin;
     window.recordLocalMessage = recordLocalMessage;
+    window.getLocalMessages = getLocalMessages;
+    window.truncateLocalMessages = truncateLocalMessages;
+    window.clearConversationMessages = clearConversationMessages;
     window.getCurrentConversationId = () => currentConversation;
     window.setCurrentConversationId = (id) => { currentConversation = id; };
 })();

@@ -85,6 +85,23 @@
             });
         }
 
+        const defaultModelSelect = document.getElementById("defaultModelSelect");
+        function populateDefaultModels() {
+            if (!defaultModelSelect) return;
+            const models = window.getAvailableModels?.() || [];
+            const selectedId = window.getCurrentModel?.().id || "auto";
+            defaultModelSelect.replaceChildren(...models.filter(model => model.available !== false).map(model => {
+                const option = document.createElement("option");
+                option.value = model.id;
+                option.textContent = `${model.name} · ${model.badge || model.provider}`;
+                return option;
+            }));
+            defaultModelSelect.value = selectedId;
+        }
+        populateDefaultModels();
+        window.addEventListener("pixel-models-updated", populateDefaultModels);
+        defaultModelSelect?.addEventListener("change", () => window.setCurrentModel?.(defaultModelSelect.value));
+
         // Auto Scroll
         const autoScrollToggle = document.getElementById("autoScrollToggle");
         if (autoScrollToggle) {
@@ -237,18 +254,17 @@
 
                 if (window.confirm("Clear all messages in the current conversation?")) {
                     const chatArea = document.getElementById("chatArea");
-                    if (chatArea) chatArea.innerHTML = "";
+                    if (chatArea) {
+                        window.clearMathTypesetting?.(chatArea);
+                        chatArea.replaceChildren();
+                    }
                     const welcome = document.querySelector(".welcome");
                     if (welcome) welcome.classList.remove("hide");
 
-                    // Clear in Supabase
-                    if (window.supabaseClient) {
-                        try {
-                            await window.supabaseClient.from("messages").delete().eq("conversation_id", convId);
-                        } catch (e) {
-                            console.warn(e);
-                        }
-                    }
+                    await window.clearConversationMessages?.(convId);
+                    window.clearServerConversation?.(convId)?.catch(error => {
+                        console.warn("[Pixel UI] Could not clear server-side chat memory:", error);
+                    });
 
                     closeSettingsModal();
                 }

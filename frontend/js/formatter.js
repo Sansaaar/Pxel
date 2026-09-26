@@ -24,6 +24,86 @@
         }
     });
 
+    function safeHttpUrl(value) {
+        try {
+            const url = new URL(value, window.location.href);
+            return url.protocol === "https:" || url.protocol === "http:" ? url.href : null;
+        } catch {
+            return null;
+        }
+    }
+
+    function youtubeVideoId(value) {
+        try {
+            const url = new URL(value);
+            const host = url.hostname.toLowerCase().replace(/^www\./, "");
+            if (host === "youtu.be") return url.pathname.split("/").filter(Boolean)[0] || null;
+            if (!["youtube.com", "m.youtube.com", "youtube-nocookie.com"].includes(host)) return null;
+            if (url.pathname === "/watch") return url.searchParams.get("v");
+            const match = url.pathname.match(/^\/(?:embed|shorts|live)\/([^/]+)/);
+            return match?.[1] || null;
+        } catch {
+            return null;
+        }
+    }
+
+    function sanitizeRenderedHtml(html) {
+        const documentFragment = new DOMParser().parseFromString(html, "text/html");
+        documentFragment.querySelectorAll("script, iframe, object, embed, form, input, video, audio, source, link, meta").forEach(node => node.remove());
+
+        documentFragment.querySelectorAll("*").forEach(element => {
+            [...element.attributes].forEach(attribute => {
+                const name = attribute.name.toLowerCase();
+                if (name.startsWith("on") || ["style", "srcdoc", "formaction"].includes(name)) {
+                    element.removeAttribute(attribute.name);
+                }
+            });
+
+            if (element.hasAttribute("href")) {
+                const safeUrl = safeHttpUrl(element.getAttribute("href"));
+                if (!safeUrl || element.tagName !== "A") {
+                    element.removeAttribute("href");
+                } else {
+                    element.setAttribute("href", safeUrl);
+                    element.setAttribute("target", "_blank");
+                    element.setAttribute("rel", "noopener noreferrer");
+                }
+            }
+
+            if (element.tagName === "IMG") {
+                const safeUrl = safeHttpUrl(element.getAttribute("src") || "");
+                if (!safeUrl) {
+                    element.replaceWith(documentFragment.createTextNode(element.getAttribute("alt") || ""));
+                } else {
+                    element.setAttribute("src", safeUrl);
+                    element.setAttribute("loading", "lazy");
+                    element.setAttribute("decoding", "async");
+                    element.setAttribute("referrerpolicy", "no-referrer");
+                }
+            }
+        });
+
+        documentFragment.querySelectorAll("a[href]").forEach(link => {
+            const videoId = youtubeVideoId(link.href);
+            const paragraph = link.closest("p");
+            if (!videoId || !/^[A-Za-z0-9_-]{11}$/.test(videoId) || !paragraph || paragraph.textContent.trim() !== link.textContent.trim()) return;
+
+            const embed = documentFragment.createElement("div");
+            embed.className = "youtube-embed";
+            const iframe = documentFragment.createElement("iframe");
+            iframe.src = `https://www.youtube-nocookie.com/embed/${videoId}`;
+            iframe.title = "YouTube video preview";
+            iframe.loading = "lazy";
+            iframe.referrerPolicy = "no-referrer";
+            iframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share";
+            iframe.allowFullscreen = true;
+            embed.appendChild(iframe);
+            paragraph.appendChild(embed);
+        });
+
+        return documentFragment.body.innerHTML;
+    }
+
     // --- Plugin: Task Lists (- [ ] and - [x]) ---
     const defaultListItem = md.renderer.rules.list_item_open || function (tokens, idx, options, env, self) {
         return self.renderToken(tokens, idx, options);
@@ -215,7 +295,7 @@
     function formatMessage(text) {
         if (!text) return '';
         const { protectedText, expressions } = protectMath(String(text));
-        return restoreMath(md.render(protectedText), expressions);
+        return sanitizeRenderedHtml(restoreMath(md.render(protectedText), expressions));
     }
 
     // Expose globally

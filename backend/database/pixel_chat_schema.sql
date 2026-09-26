@@ -123,182 +123,180 @@ DROP POLICY IF EXISTS "allow_anon_typing_upsert" ON public.pixel_chat_typing;
 
 -- ── 5. Define Secure RLS Policies ─────────────────────────────────
 
+-- SECURITY DEFINER helpers avoid recursive policies on the membership table.
+CREATE OR REPLACE FUNCTION public.pixel_chat_is_member(p_conversation_id TEXT)
+RETURNS BOOLEAN
+LANGUAGE SQL
+STABLE
+SECURITY DEFINER
+SET search_path = pg_catalog, public
+AS $$
+    SELECT EXISTS (
+        SELECT 1 FROM public.pixel_chat_room_members m
+        WHERE m.conversation_id = p_conversation_id
+          AND m.user_id = auth.uid()::text
+    );
+$$;
+
+CREATE OR REPLACE FUNCTION public.pixel_chat_is_owner(p_conversation_id TEXT)
+RETURNS BOOLEAN
+LANGUAGE SQL
+STABLE
+SECURITY DEFINER
+SET search_path = pg_catalog, public
+AS $$
+    SELECT EXISTS (
+        SELECT 1 FROM public.pixel_chat_conversations c
+        WHERE c.id = p_conversation_id
+          AND c.owner_id = auth.uid()::text
+    );
+$$;
+
+REVOKE ALL ON FUNCTION public.pixel_chat_is_member(TEXT) FROM PUBLIC;
+REVOKE ALL ON FUNCTION public.pixel_chat_is_owner(TEXT) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.pixel_chat_is_member(TEXT) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.pixel_chat_is_owner(TEXT) TO authenticated;
+
 -- 5.1 Users:
--- Anyone in the application can search/view display names and avatars
+-- Account profiles are read by the authenticated backend, not exposed to anonymous clients.
 CREATE POLICY "chat_users_select_authenticated"
     ON public.pixel_chat_users FOR SELECT
-    TO authenticated, anon
-    USING (true);
+    TO authenticated
+    USING (id = (auth.uid())::text);
 
 -- Users can only insert their own profile
 CREATE POLICY "chat_users_insert_self"
     ON public.pixel_chat_users FOR INSERT
-    TO authenticated, anon
-    WITH CHECK (id = (auth.uid())::text OR auth.uid() IS NULL);
+    TO authenticated
+    WITH CHECK (id = (auth.uid())::text);
 
 -- Users can only update their own profile
 CREATE POLICY "chat_users_update_self"
     ON public.pixel_chat_users FOR UPDATE
-    TO authenticated, anon
-    USING (id = (auth.uid())::text OR auth.uid() IS NULL);
+    TO authenticated
+    USING (id = (auth.uid())::text)
+    WITH CHECK (id = (auth.uid())::text);
 
 -- 5.2 Conversations:
 -- A user can only see conversations they belong to
 CREATE POLICY "chat_conv_select_members"
     ON public.pixel_chat_conversations FOR SELECT
-    TO authenticated, anon
-    USING (
-        EXISTS (
-            SELECT 1 FROM public.pixel_chat_room_members m
-            WHERE m.conversation_id = id
-              AND (m.user_id = (auth.uid())::text OR auth.uid() IS NULL)
-        )
-    );
+    TO authenticated
+    USING (public.pixel_chat_is_member(id));
 
 -- Any user can create a new room or DM
 CREATE POLICY "chat_conv_insert_authenticated"
     ON public.pixel_chat_conversations FOR INSERT
-    TO authenticated, anon
-    WITH CHECK (true);
+    TO authenticated
+    WITH CHECK (owner_id = (auth.uid())::text);
 
 -- Members can update conversation metadata (e.g. topic, last_message)
 CREATE POLICY "chat_conv_update_members"
     ON public.pixel_chat_conversations FOR UPDATE
-    TO authenticated, anon
-    USING (
-        EXISTS (
-            SELECT 1 FROM public.pixel_chat_room_members m
-            WHERE m.conversation_id = id
-              AND (m.user_id = (auth.uid())::text OR auth.uid() IS NULL)
-        )
-    );
+    TO authenticated
+    USING (public.pixel_chat_is_owner(id))
+    WITH CHECK (public.pixel_chat_is_owner(id));
 
 -- Only room creator can delete a room
 CREATE POLICY "chat_conv_delete_owner"
     ON public.pixel_chat_conversations FOR DELETE
-    TO authenticated, anon
-    USING (owner_id = (auth.uid())::text OR auth.uid() IS NULL);
+    TO authenticated
+    USING (public.pixel_chat_is_owner(id));
 
 -- 5.3 Members:
 -- Members of a conversation can see fellow members
 CREATE POLICY "chat_members_select"
     ON public.pixel_chat_room_members FOR SELECT
-    TO authenticated, anon
-    USING (
-        EXISTS (
-            SELECT 1 FROM public.pixel_chat_room_members m
-            WHERE m.conversation_id = conversation_id
-              AND (m.user_id = (auth.uid())::text OR auth.uid() IS NULL)
-        )
-    );
-
--- Users can join a room (insert self) or room owner can add members
-CREATE POLICY "chat_members_insert"
-    ON public.pixel_chat_room_members FOR INSERT
-    TO authenticated, anon
-    WITH CHECK (
-        user_id = (auth.uid())::text
-        OR auth.uid() IS NULL
-        OR EXISTS (
-            SELECT 1 FROM public.pixel_chat_conversations c
-            WHERE c.id = conversation_id
-              AND c.owner_id = (auth.uid())::text
-        )
-    );
+    TO authenticated
+    USING (public.pixel_chat_is_member(conversation_id));
 
 -- Users can leave (delete self) or room owner can kick members
 CREATE POLICY "chat_members_delete"
     ON public.pixel_chat_room_members FOR DELETE
-    TO authenticated, anon
+    TO authenticated
     USING (
         user_id = (auth.uid())::text
-        OR auth.uid() IS NULL
-        OR EXISTS (
-            SELECT 1 FROM public.pixel_chat_conversations c
-            WHERE c.id = conversation_id
-              AND c.owner_id = (auth.uid())::text
-        )
+        OR public.pixel_chat_is_owner(conversation_id)
     );
 
 -- 5.4 Messages:
 -- Users can only read messages from conversations they belong to
 CREATE POLICY "chat_msg_select_members"
     ON public.pixel_chat_messages FOR SELECT
-    TO authenticated, anon
-    USING (
-        EXISTS (
-            SELECT 1 FROM public.pixel_chat_room_members m
-            WHERE m.conversation_id = chat_id
-              AND (m.user_id = (auth.uid())::text OR auth.uid() IS NULL)
-        )
-    );
+    TO authenticated
+    USING (public.pixel_chat_is_member(chat_id));
 
 -- Users can only send messages as themselves to conversations they belong to
 CREATE POLICY "chat_msg_insert_sender"
     ON public.pixel_chat_messages FOR INSERT
-    TO authenticated, anon
+    TO authenticated
     WITH CHECK (
-        EXISTS (
-            SELECT 1 FROM public.pixel_chat_room_members m
-            WHERE m.conversation_id = chat_id
-              AND (m.user_id = (auth.uid())::text OR auth.uid() IS NULL)
-        )
+        sender_id = (auth.uid())::text
+        AND public.pixel_chat_is_member(chat_id)
     );
 
 -- Members can update reactions/read_by; original sender can edit content
 CREATE POLICY "chat_msg_update_members"
     ON public.pixel_chat_messages FOR UPDATE
-    TO authenticated, anon
+    TO authenticated
     USING (
-        EXISTS (
-            SELECT 1 FROM public.pixel_chat_room_members m
-            WHERE m.conversation_id = chat_id
-              AND (m.user_id = (auth.uid())::text OR auth.uid() IS NULL)
-        )
+        sender_id = (auth.uid())::text
+        AND public.pixel_chat_is_member(chat_id)
+    )
+    WITH CHECK (
+        sender_id = (auth.uid())::text
+        AND public.pixel_chat_is_member(chat_id)
     );
 
 -- Sender or room owner can delete message
 CREATE POLICY "chat_msg_delete_sender_or_owner"
     ON public.pixel_chat_messages FOR DELETE
-    TO authenticated, anon
+    TO authenticated
     USING (
         sender_id = (auth.uid())::text
-        OR auth.uid() IS NULL
-        OR EXISTS (
-            SELECT 1 FROM public.pixel_chat_conversations c
-            WHERE c.id = chat_id
-              AND c.owner_id = (auth.uid())::text
-        )
+        OR public.pixel_chat_is_owner(chat_id)
     );
 
 -- 5.5 Typing Indicators:
 CREATE POLICY "chat_typing_select"
     ON public.pixel_chat_typing FOR SELECT
-    TO authenticated, anon
-    USING (
-        EXISTS (
-            SELECT 1 FROM public.pixel_chat_room_members m
-            WHERE m.conversation_id = chat_id
-              AND (m.user_id = (auth.uid())::text OR auth.uid() IS NULL)
-        )
-    );
+    TO authenticated
+    USING (public.pixel_chat_is_member(chat_id));
 
 CREATE POLICY "chat_typing_all_self"
     ON public.pixel_chat_typing FOR ALL
-    TO authenticated, anon
+    TO authenticated
     USING (
-        user_id = (auth.uid())::text OR auth.uid() IS NULL
+        user_id = (auth.uid())::text
+        AND public.pixel_chat_is_member(chat_id)
     )
     WITH CHECK (
-        user_id = (auth.uid())::text OR auth.uid() IS NULL
+        user_id = (auth.uid())::text
+        AND public.pixel_chat_is_member(chat_id)
     );
 
 -- ── 6. Storage Bucket & Private Attachment Policies ───────────────
 
 -- Create private bucket for attachments (public = false)
-INSERT INTO storage.buckets (id, name, public)
-VALUES ('pixel-chat-attachments', 'pixel-chat-attachments', false)
-ON CONFLICT (id) DO UPDATE SET public = false;
+INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+VALUES (
+    'pixel-chat-attachments',
+    'pixel-chat-attachments',
+    false,
+    5242880,
+    ARRAY[
+        'image/png', 'image/jpeg', 'image/gif', 'image/webp',
+        'application/pdf', 'application/json', 'text/plain', 'text/markdown', 'text/csv',
+        'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'application/vnd.ms-powerpoint', 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+        'audio/mpeg', 'audio/ogg', 'audio/wav', 'audio/webm', 'video/mp4', 'video/webm'
+    ]
+)
+ON CONFLICT (id) DO UPDATE
+SET public = false,
+    file_size_limit = EXCLUDED.file_size_limit,
+    allowed_mime_types = EXCLUDED.allowed_mime_types;
 
 -- Drop existing storage policies for clean rerun
 DROP POLICY IF EXISTS "chat_storage_select" ON storage.objects;
@@ -307,14 +305,22 @@ DROP POLICY IF EXISTS "chat_storage_insert" ON storage.objects;
 -- Allow reading attachments from pixel-chat-attachments bucket
 CREATE POLICY "chat_storage_select"
     ON storage.objects FOR SELECT
-    TO authenticated, anon
-    USING (bucket_id = 'pixel-chat-attachments');
+    TO authenticated
+    USING (
+        bucket_id = 'pixel-chat-attachments'
+        AND split_part(name, '/', 1) = 'chat'
+        AND public.pixel_chat_is_member(split_part(name, '/', 2))
+    );
 
 -- Allow uploading attachments to pixel-chat-attachments bucket
 CREATE POLICY "chat_storage_insert"
     ON storage.objects FOR INSERT
-    TO authenticated, anon
-    WITH CHECK (bucket_id = 'pixel-chat-attachments');
+    TO authenticated
+    WITH CHECK (
+        bucket_id = 'pixel-chat-attachments'
+        AND split_part(name, '/', 1) = 'chat'
+        AND public.pixel_chat_is_member(split_part(name, '/', 2))
+    );
 
 -- ── 7. Enable Supabase Realtime ───────────────────────────────────
 
