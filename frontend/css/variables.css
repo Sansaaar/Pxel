@@ -1,0 +1,51 @@
+:root{
+
+    /* Colors */
+
+    --bg:#0A0A0A;
+
+    --left-panel:#111214;
+
+    --card:#17181C;
+
+    --input:#23252B;
+
+    --hover:#2A2C33;
+
+    --gold:#D4AF37;
+
+    --gold-light:#F4E3A2;
+
+    --text:#FFFFFF;
+
+    --text-secondary:#8F8F8F;
+
+    --border:rgba(212,175,55,.12);
+
+    --success:#46D160;
+
+    --error:#FF5A5A;
+
+
+
+    /* Radius */
+
+    --radius:18px;
+
+    --radius-lg:28px;
+
+
+
+    /* Animation */
+
+    --transition:.28s ease;
+
+
+
+    /* Shadow */
+
+    --shadow:
+
+    0 20px 60px rgba(0,0,0,.55);
+
+}

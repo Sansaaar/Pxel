@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pixel AI — Personal AI Workspace</title>
+
+    <!-- Meta branding -->
+    <meta name="description" content="Pixel AI — A refined, ultra-fast, premium AI workspace for creators and developers.">
+    <link rel="icon" type="image/x-icon" href="assets/pixel.png">
+
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="css/styles2.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/atom-one-dark.min.css">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bitcount+Single:wght@100..900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+</head>
+
+<body>
+    <!-- Subtle Interactive Cursor Glow -->
+    <div class="cursor-glow"></div>
+
+    <div class="app">
+
+        <!-- ========================================== -->
+        <!-- Sidebar Navigation Drawer                  -->
+        <!-- ========================================== -->
+        <aside class="sidebar expanded" id="sidebar" aria-label="Conversation navigation">
+            <div class="sidebar-header">
+                <div class="sidebar-brand">
+                    <div class="sidebar-logo">
+                        <img src="assets/pixel.png" alt="Pixel Logo" id="pixelLogo">
+                    </div>
+                    <div class="sidebar-title-group">
+                        <span class="sidebar-title">Pixel</span>
+                        <span class="sidebar-version">2.0</span>
+                    </div>
+                </div>
+                <button class="sidebar-close-btn sidebar-toggle-btn" type="button" aria-label="Close sidebar" title="Collapse sidebar">
+                    <i class="fa-solid fa-chevron-left"></i>
+                </button>
+            </div>
+
+            <!-- Navigation Actions (Vertical Stack) -->
+            <div class="sidebar-actions">
+                <button id="newChatBtn" class="new-chat-btn" type="button" title="New Chat (Ctrl+K)">
+                    <i class="fa-solid fa-plus"></i>
+                    <span>New Chat</span>
+                    <kbd class="shortcut-key">Ctrl+K</kbd>
+                </button>
+                <button id="userChatBtn" class="new-chat-btn user-chat-btn" type="button" title="User Chat & Rooms">
+                    <i class="fa-solid fa-comments"></i>
+                    <span>Chat</span>
+                    <span id="globalUnreadBadge" class="unread-badge-pill" style="display:none;">0</span>
+                </button>
+                <button id="artworksBtn" class="new-chat-btn artworks-btn" type="button" title="Artworks Portfolio">
+                    <i class="fa-solid fa-palette"></i>
+                    <span>Artworks</span>
+                </button>
+                <button id="creatorBtn" class="new-chat-btn creator-btn" type="button" title="Creator (Ctrl+C)">
+                    <i class="fa-solid fa-user"></i>
+                    <span>Creator</span>
+                    <kbd class="shortcut-key">Ctrl+C</kbd>
+                </button>
+            </div>
+
+            <!-- Search Conversation History -->
+            <div class="sidebar-search">
+                <div class="sidebar-search-box">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input id="sidebarSearchInput" type="search" placeholder="Search conversations..." aria-label="Search conversations">
+                </div>
+            </div>
+
+            <!-- Conversation History List -->
+            <nav class="chat-history" aria-label="Chat history">
+                <div class="history-group" id="todayGroup">
+                    <div class="history-title">Today</div>
+                    <div class="conversation-list" id="todayList"></div>
+                </div>
+
+                <div class="history-group" id="yesterdayGroup">
+                    <div class="history-title">Yesterday</div>
+                    <div class="conversation-list" id="yesterdayList"></div>
+                </div>
+
+                <div class="history-group" id="weekGroup">
+                    <div class="history-title">Last 7 Days</div>
+                    <div class="conversation-list" id="weekList"></div>
+                </div>
+
+                <div class="history-group" id="monthGroup">
+                    <div class="history-title">Older</div>
+                    <div class="conversation-list" id="monthList"></div>
+                </div>
+            </nav>
+
+            <!-- Sidebar User / Footer -->
+            <div class="sidebar-footer">
+                <button id="settingsBtn" class="sidebar-footer-btn" type="button" title="Settings">
+                    <i class="fa-solid fa-sliders"></i>
+                    <span>Settings</span>
+                </button>
+
+                <div class="profile-card">
+                    <button id="profileBtn" class="profile-button open-settings-trigger" type="button" title="Account profile">
+                        <span class="profile-avatar" id="profileAvatar">P</span>
+                        <span class="profile-details">
+                            <strong id="profileName">Pixel User</strong>
+                            <small id="profileEmail">guest@pixel.local</small>
+                        </span>
+                        <i class="fa-solid fa-ellipsis-vertical profile-menu-icon"></i>
+                    </button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Mobile Drawer Overlay -->
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+        <!-- ========================================== -->
+        <!-- Main Workspace Area                        -->
+        <!-- ========================================== -->
+        <main class="main" id="mainContent">
+
+            <!-- VIEW 1: AI Chat View -->
+            <div id="aiChatView" class="app-view-panel active">
+                <!-- Top Navigation Bar -->
+                <header class="topbar">
+                    <div class="topbar-left">
+                        <button id="menuBtn" class="topbar-btn sidebar-toggle-btn" type="button" aria-label="Toggle sidebar" title="Toggle navigation">
+                            <i class="fa-solid fa-bars"></i>
+                        </button>
+                        <div class="current-chat-meta">
+                            <button id="currentChatTitle" class="current-chat-title" type="button" title="Click to rename">
+                                New Chat
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="topbar-center">
+                        <button id="topModelPill" class="top-model-pill" type="button" title="Change active AI model">
+                            <span class="pill-dot"></span>
+                            <span>Auto</span>
+                            <i class="fa-solid fa-chevron-down pill-chevron"></i>
+                        </button>
+                    </div>
+
+                    <div class="topbar-right">
+                        <button id="topNewChatBtn" class="topbar-btn" type="button" aria-label="Start new chat" title="New Chat">
+                            <i class="fa-solid fa-pen-to-square"></i>
+                        </button>
+                        <button id="settingsTopBtn" class="topbar-btn" type="button" aria-label="Open settings" title="Settings">
+                            <i class="fa-solid fa-gear"></i>
+                        </button>
+                    </div>
+                </header>
+
+                <!-- Conversation Scrolling Container -->
+                <section class="chat-container">
+
+                    <!-- Polished Empty State -->
+                    <div class="welcome" id="welcomeScreen">
+                        <div class="welcome-emblem">
+                            <img src="assets/pixel.png" alt="Pixel AI" class="emblem-img">
+                            <div class="emblem-glow"></div>
+                        </div>
+
+                        <h1 class="welcome-title">Pixel</h1>
+                        <p class="welcome-subtitle">What are you working on today?</p>
+
+                        <!-- Interactive Starter Prompt Cards -->
+                        <div class="starter-cards-grid">
+                            <div class="starter-card" data-prompt="Explain quantum computing in simple terms with an everyday analogy.">
+                                <div class="starter-card-top">
+                                    <div class="starter-icon"><i class="fa-solid fa-bolt"></i></div>
+                                    <strong>Explain something</strong>
+                                </div>
+                                <span class="starter-text">Quantum computing in simple terms</span>
+                            </div>
+
+                            <div class="starter-card" data-prompt="Write a modern, production-ready async Python script to fetch, parse, and validate JSON data.">
+                                <div class="starter-card-top">
+                                    <div class="starter-icon"><i class="fa-solid fa-code"></i></div>
+                                    <strong>Help me code</strong>
+                                </div>
+                                <span class="starter-text">Async Python script to parse REST APIs</span>
+                            </div>
+
+                            <div class="starter-card" data-prompt="Brainstorm 5 innovative SaaS ideas that combine agentic workflows with developer tools.">
+                                <div class="starter-card-top">
+                                    <div class="starter-icon"><i class="fa-solid fa-lightbulb"></i></div>
+                                    <strong>Brainstorm ideas</strong>
+                                </div>
+                                <span class="starter-text">5 innovative SaaS ideas with AI workflows</span>
+                            </div>
+
+                            <div class="starter-card" data-prompt="Analyze the trade-offs between monolithic architectures and event-driven microservices.">
+                                <div class="starter-card-top">
+                                    <div class="starter-icon"><i class="fa-solid fa-chart-pie"></i></div>
+                                    <strong>Analyze something</strong>
+                                </div>
+                                <span class="starter-text">Monolithic vs event-driven microservices</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Chat Messages Stream Area -->
+                    <div id="chatArea" class="chat-area"></div>
+
+                </section>
+
+                <!-- Message Composer Area -->
+                <div class="composer-container">
+                    <div class="composer-box">
+
+                        <!-- Uploaded Attachments Preview -->
+                        <div id="attachmentContainer" class="attachment-container"></div>
+
+                        <!-- Input Textarea Row -->
+                        <div class="composer-input-row">
+                            <textarea
+                                id="promptInput"
+                                rows="1"
+                                placeholder="Ask Pixel anything... (Shift + Enter for newline)"
+                                aria-label="Ask Pixel anything"></textarea>
+                        </div>
+
+                        <!-- Composer Toolbar Row -->
+                        <div class="composer-toolbar">
+                            <div class="composer-toolbar-left">
+                                <button
+                                    id="attachBtn"
+                                    class="composer-btn icon-btn"
+                                    type="button"
+                                    title="Attach documents or images">
+                                    <i class="fa-solid fa-paperclip"></i>
+                                </button>
+                                <input
+                                    id="fileInput"
+                                    type="file"
+                                    hidden
+                                    multiple
+                                    accept=".pdf,.txt,.md,.doc,.docx,.csv,.json,.js,.ts,.py,.java,.cpp,.c,.html,.css,image/*">
+
+                                <!-- Model Selector Dropdown Trigger -->
+                                <div class="model-selector">
+                                    <button
+                                        id="modelButton"
+                                        class="model-button"
+                                        type="button"
+                                        aria-haspopup="true"
+                                        aria-expanded="false"
+                                        title="Choose AI Model">
+                                        <span class="model-btn-icon">✨</span>
+                                        <span class="model-btn-name">Auto</span>
+                                        <i class="fa-solid fa-chevron-down model-chevron"></i>
+                                    </button>
+
+                                    <div id="modelMenu" class="model-menu" role="menu">
+                                        <!-- Injected dynamically by models.js -->
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="composer-toolbar-right">
+                                <button
+                                    id="sendBtn"
+                                    class="action-circle-btn send-btn"
+                                    type="button"
+                                    aria-label="Send message"
+                                    title="Send message">
+                                    <i class="fa-solid fa-arrow-up"></i>
+                                </button>
+
+                                <button
+                                    id="stopBtn"
+                                    class="action-circle-btn stop-btn"
+                                    type="button"
+                                    aria-label="Stop generation"
+                                    title="Stop generation"
+                                    style="display: none;">
+                                    <i class="fa-solid fa-square"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="composer-legal-hint">
+                        <span>Pixel 2.0 can make mistakes. Verify critical facts and code before production.</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIEW 2: Artworks Portfolio View -->
+            <div id="artworksView" class="app-view-panel">
+                <header class="topbar">
+                    <div class="topbar-left">
+                        <button class="topbar-btn sidebar-toggle-btn" type="button" aria-label="Toggle sidebar">
+                            <i class="fa-solid fa-bars"></i>
+                        </button>
+                        <span class="current-chat-title"><i class="fa-solid fa-palette" style="color:var(--gold);"></i> Artworks Portfolio</span>
+                    </div>
+                </header>
+
+                <div class="artworks-container">
+                    <div class="artworks-header">
+                        <div class="artworks-title-group">
+                            <h1><i class="fa-solid fa-palette"></i> Artworks Gallery</h1>
+                            <p class="artworks-subtitle">Explore original digital artwork, concepts, and illustrations.</p>
+                        </div>
+                        <div class="artworks-controls">
+                            <div class="artworks-search-box">
+                                <i class="fa-solid fa-magnifying-glass"></i>
+                                <input id="artworksSearchInput" type="text" placeholder="Search artwork...">
+                            </div>
+                            <select id="artworksFilterSelect" class="artworks-filter-select">
+                                <option value="all">All Categories</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div id="artworksGrid" class="artworks-grid"></div>
+                </div>
+            </div>
+
+            <!-- VIEW 3: User Chat & Rooms View -->
+            <div id="userChatView" class="app-view-panel">
+                <div class="user-chat-container">
+                    <div class="user-chat-sidebar">
+                        <div class="user-chat-sidebar-header">
+                            <div class="user-chat-brand">
+                                <h2><i class="fa-solid fa-comments"></i> Pixel Messages</h2>
+                                <button class="topbar-btn sidebar-toggle-btn" type="button"><i class="fa-solid fa-bars"></i></button>
+                            </div>
+                            <div class="user-chat-actions-row">
+                                <button id="startCreateRoomBtn" class="chat-action-btn primary" type="button">
+                                    <i class="fa-solid fa-plus"></i> Create Room
+                                </button>
+                                <button id="startJoinRoomBtn" class="chat-action-btn" type="button">
+                                    <i class="fa-solid fa-right-to-bracket"></i> Join Room
+                                </button>
+                            </div>
+                            <button id="startDirectChatBtn" class="chat-action-btn" type="button" style="width:100%;">
+                                <i class="fa-solid fa-user-plus"></i> Direct Chat with User
+                            </button>
+                            <div class="user-chat-search-wrap" style="padding:4px 0 0;">
+                                <div style="position:relative; width:100%;">
+                                    <i class="fa-solid fa-magnifying-glass" style="position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--text-muted); font-size:12px; pointer-events:none;"></i>
+                                    <input id="userChatSidebarSearchInput" class="user-chat-search-input" type="text" placeholder="Search chats...">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="userChatList" class="user-chat-list"></div>
+                    </div>
+
+                    <div class="user-chat-main">
+                        <div class="user-chat-header">
+                            <button id="userChatBackBtn" class="topbar-btn user-chat-back-btn" type="button" title="Back to chats">
+                                <i class="fa-solid fa-arrow-left"></i>
+                            </button>
+                            <span id="userChatHeaderAvatar" class="user-chat-header-avatar" aria-hidden="true"><i class="fa-solid fa-comments"></i></span>
+                            <div class="user-chat-header-info">
+                                <span id="userChatHeaderName" class="user-chat-header-name">Select a conversation</span>
+                                <span id="userChatHeaderDetails" class="user-chat-header-sub"></span>
+                            </div>
+                            <div class="user-chat-header-actions">
+                                <div class="artworks-search-box" id="userChatSearchWrap" hidden>
+                                    <i class="fa-solid fa-magnifying-glass"></i>
+                                    <input id="userChatSearchInput" type="text" placeholder="Search msgs...">
+                                </div>
+                                <button id="userChatSearchToggleBtn" class="topbar-btn" type="button" title="Search in chat">
+                                    <i class="fa-solid fa-magnifying-glass"></i>
+                                </button>
+                                <details class="user-chat-header-menu">
+                                    <summary class="topbar-btn" aria-label="Conversation options" title="Conversation options">
+                                        <i class="fa-solid fa-ellipsis-vertical"></i>
+                                    </summary>
+                                    <div class="user-chat-header-menu-panel">
+                                        <span id="userChatRoomCodePill" class="room-code-tag" style="display:none;" title="Click to copy room code">
+                                            <i class="fa-solid fa-hashtag"></i> <span id="userChatRoomCodeText"></span> <i class="fa-solid fa-copy"></i>
+                                        </span>
+                                        <button id="userChatPinnedBtn" class="user-chat-menu-item" type="button" title="Pinned messages" style="display:none;">
+                                            <i class="fa-solid fa-thumbtack"></i> Pinned messages
+                                        </button>
+                                        <button id="userChatParticipantsBtn" class="user-chat-menu-item" type="button" title="View participants">
+                                            <i class="fa-solid fa-users"></i> Participants
+                                        </button>
+                                        <button id="userChatClearHistoryBtn" class="user-chat-menu-item" type="button" title="Clear chat history">
+                                            <i class="fa-solid fa-broom"></i> Clear history
+                                        </button>
+                                        <button id="userChatDeleteRoomBtn" class="user-chat-menu-item danger" type="button" title="Delete room" style="display:none;">
+                                            <i class="fa-solid fa-trash"></i> Delete room
+                                        </button>
+                                    </div>
+                                </details>
+                            </div>
+                        </div>
+
+                        <!-- Optional Room Topic Banner -->
+                        <div id="userChatTopicBar" class="user-chat-topic-bar" style="display:none;">
+                            <span><i class="fa-solid fa-bullhorn" style="color:var(--gold);"></i> Topic: <strong id="userChatTopicText">No topic set</strong></span>
+                            <button id="userChatEditTopicBtn" style="background:none; border:none; color:var(--gold); cursor:pointer; font-size:11px;" title="Edit topic"><i class="fa-solid fa-pen"></i> Edit</button>
+                        </div>
+
+                        <!-- Pinned Messages Panel (slidedown) -->
+                        <div id="userChatPinnedPanel" class="pinned-panel" style="display:none;">
+                            <div class="pinned-panel-header">
+                                <i class="fa-solid fa-thumbtack" style="color:var(--gold);"></i>
+                                <span>Pinned Messages</span>
+                                <button onclick="document.getElementById('userChatPinnedPanel').style.display='none';" class="topbar-btn" style="margin-left:auto;"><i class="fa-solid fa-xmark"></i></button>
+                            </div>
+                            <div id="userChatPinnedList"></div>
+                        </div>
+
+                        <div id="userChatMessagesArea" class="user-chat-messages-container">
+                            <div class="chat-empty-state">
+                                <div class="chat-empty-state-icon">
+                                    <i class="fa-solid fa-comments"></i>
+                                </div>
+                                <h2>PIXEL CHAT</h2>
+                                <p>Start a new conversation or select an existing one to chat with Pixel users and rooms.</p>
+                                <button id="initialNewChatBtn" class="chat-action-btn primary" type="button" onclick="document.getElementById('startDirectChatBtn')?.click();">
+                                    <i class="fa-solid fa-plus"></i> New Chat
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Floating Scroll-To-Bottom Button -->
+                        <button id="userChatScrollBottomBtn" class="chat-scroll-bottom-btn" type="button" style="display:none;" title="Scroll to newest messages">
+                            <i class="fa-solid fa-arrow-down"></i> <span id="userChatNewMsgCounter" style="display:none; font-size:10px; font-weight:700;"></span>
+                        </button>
+
+                        <!-- Typing Indicator -->
+                        <div id="userChatTypingIndicator" class="typing-indicator-bar" style="display:none;"></div>
+
+                        <!-- Reply-To Bar -->
+                        <div id="userChatReplyBar" class="reply-to-bar" style="display:none;">
+                            <i id="userChatReplyBarIcon" class="fa-solid fa-reply" style="color:var(--gold);transform:scaleX(-1);"></i>
+                            <span id="userChatReplyBarText" class="reply-to-text"></span>
+                            <button id="userChatCancelReplyBtn" class="topbar-btn" type="button" title="Cancel reply">
+                                <i class="fa-solid fa-xmark"></i>
+                            </button>
+                        </div>
+
+                        <!-- Attachments Preview Area -->
+                        <div id="userChatAttachmentsPreview" style="display:none; padding:8px 20px; border-top:1px solid var(--border); background:var(--surface-raised); gap:8px;"></div>
+
+                        <div class="user-chat-composer-wrap">
+                            <div class="user-chat-composer-box">
+                                <button id="userChatAttachBtn" class="composer-btn icon-btn" type="button" title="Attach file or image">
+                                    <i class="fa-solid fa-paperclip"></i>
+                                </button>
+                                <input id="userChatFileInput" type="file" hidden multiple accept="image/*,.pdf,.txt,.json,.js,.py,.doc,.docx">
+                                <textarea id="userChatMessageInput" rows="1" placeholder="Type a message... (Shift + Enter for newline)"></textarea>
+                                <button id="userChatEmojiBtn" class="composer-btn icon-btn" type="button" title="Insert emoji">
+                                    <i class="fa-regular fa-face-smile"></i>
+                                </button>
+                                <button id="userChatSendBtn" class="action-circle-btn send-btn" type="button" title="Send message">
+                                    <i class="fa-solid fa-paper-plane"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- Settings Dialog Modal                      -->
+    <!-- ========================================== -->
+    <dialog id="settingsPanel" class="settings-dialog" aria-labelledby="settingsHeading">
+        <div class="dialog-header">
+            <h2 id="settingsHeading"><i class="fa-solid fa-gear"></i> Settings</h2>
+            <button class="modal-close" type="button" aria-label="Close settings">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        <div class="settings-layout">
+            <nav class="settings-nav" aria-label="Settings categories">
+                <button class="settings-tab active" type="button" data-settings-tab="general">
+                    <i class="fa-solid fa-palette"></i>
+                    <span>Appearance</span>
+                </button>
+                <button class="settings-tab" type="button" data-settings-tab="chat">
+                    <i class="fa-solid fa-message"></i>
+                    <span>Chat</span>
+                </button>
+                <button class="settings-tab" type="button" data-settings-tab="account">
+                    <i class="fa-regular fa-user"></i>
+                    <span>Account</span>
+                </button>
+                <button class="settings-tab" type="button" data-settings-tab="shortcuts">
+                    <i class="fa-regular fa-keyboard"></i>
+                    <span>Shortcuts</span>
+                </button>
+                <button class="settings-tab" type="button" data-settings-tab="data">
+                    <i class="fa-solid fa-shield-halved"></i>
+                    <span>Data & Privacy</span>
+                </button>
+                <button class="settings-tab" type="button" data-settings-tab="about">
+                    <i class="fa-solid fa-circle-info"></i>
+                    <span>About</span>
+                </button>
+            </nav>
+
+            <div class="settings-content">
+                <!-- Appearance Tab -->
+                <section class="settings-page active" data-settings-page="general">
+                    <div class="settings-section-header">
+                        <h3>Appearance</h3>
+                        <p class="settings-intro">Customize the look and feel of your workspace.</p>
+                    </div>
+
+                    <div class="settings-group">
+                        <div class="settings-group-title">Theme</div>
+                        <label class="setting-row">
+                            <div class="setting-info">
+                                <div class="setting-icon-wrap"><i class="fa-solid fa-sun"></i></div>
+                                <div>
+                                    <strong>Light Mode</strong>
+                                    <small>Switch to a bright, high-contrast theme</small>
+                                </div>
+                            </div>
+                            <input id="lightModeToggle" type="checkbox">
+                        </label>
+
+                        <label class="setting-row">
+                            <div class="setting-info">
+                                <div class="setting-icon-wrap"><i class="fa-solid fa-braille"></i></div>
+                                <div>
+                                    <strong>Show Texture</strong>
+                                    <small>Subtle grain overlay for a premium feel</small>
+                                </div>
+                            </div>
+                            <input id="textureToggle" type="checkbox" checked>
+                        </label>
+                    </div>
+
+                    <div class="settings-group">
+                        <div class="settings-group-title">Accessibility</div>
+                        <label class="setting-row">
+                            <div class="setting-info">
+                                <div class="setting-icon-wrap"><i class="fa-solid fa-gauge-simple"></i></div>
+                                <div>
+                                    <strong>Reduce Motion</strong>
+                                    <small>Minimize animations and transitions</small>
+                                </div>
+                            </div>
+                            <input id="reduceMotionToggle" type="checkbox">
+                        </label>
+                    </div>
+                </section>
+
+                <!-- Chat Tab -->
+                <section class="settings-page" data-settings-page="chat">
+                    <div class="settings-section-header">
+                        <h3>Chat Behavior</h3>
+                        <p class="settings-intro">Configure how messages are sent and displayed.</p>
+                    </div>
+
+                    <div class="settings-group">
+                        <div class="settings-group-title">Input</div>
+                        <label class="setting-row">
+                            <div class="setting-info">
+                                <div class="setting-icon-wrap"><i class="fa-solid fa-paper-plane"></i></div>
+                                <div>
+                                    <strong>Send with Enter</strong>
+                                    <small>Press Enter to submit, Shift+Enter for new line</small>
+                                </div>
+                            </div>
+                            <input id="sendWithEnterToggle" type="checkbox" checked>
+                        </label>
+                    </div>
+
+                    <div class="settings-group">
+                        <div class="settings-group-title">Display</div>
+                        <label class="setting-row">
+                            <div class="setting-info">
+                                <div class="setting-icon-wrap"><i class="fa-solid fa-arrow-down-wide-short"></i></div>
+                                <div>
+                                    <strong>Auto-scroll</strong>
+                                    <small>Automatically scroll to latest response while streaming</small>
+                                </div>
+                            </div>
+                            <input id="autoScrollToggle" type="checkbox" checked>
+                        </label>
+
+                        <div class="setting-row setting-row-select">
+                            <div class="setting-info">
+                                <div class="setting-icon-wrap"><i class="fa-solid fa-arrows-left-right"></i></div>
+                                <div>
+                                    <strong>Content Width</strong>
+                                    <small>Maximum width of conversation messages</small>
+                                </div>
+                            </div>
+                            <select id="responseWidthSelect" class="settings-select-inline">
+                                <option value="760px">Narrow</option>
+                                <option value="920px" selected>Default</option>
+                                <option value="1120px">Wide</option>
+                                <option value="100%">Full</option>
+                            </select>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Account Tab -->
+                <section class="settings-page" data-settings-page="account">
+                    <div class="settings-section-header">
+                        <h3>Account</h3>
+                        <p class="settings-intro">Manage your profile and session.</p>
+                    </div>
+
+                    <div class="settings-group">
+                        <div class="settings-group-title">Profile</div>
+                        <div class="profile-card-pro">
+                            <span class="profile-avatar profile-avatar-large" id="profileAvatarLarge">P</span>
+                            <div class="profile-card-pro-info">
+                                <strong id="profileNameLarge">Pixel User</strong>
+                                <small id="profileEmailLarge">guest@pixel.local</small>
+                            </div>
+                        </div>
+
+                        <div class="settings-field">
+                            <label class="settings-field-label" for="displayNameInput">Display Name</label>
+                            <div class="settings-field-row">
+                                <input id="displayNameInput" class="settings-input" maxlength="32" placeholder="Enter your name">
+                                <button id="saveProfileBtn" class="settings-btn-primary" type="button">
+                                    <i class="fa-solid fa-check"></i> Save
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="settings-group">
+                        <div class="settings-group-title">Session</div>
+                        <div class="settings-action-row">
+                            <div>
+                                <strong>Sign Out</strong>
+                                <small>End your current session and return to login</small>
+                            </div>
+                            <button id="logoutSettingsBtn" class="settings-btn-secondary" type="button">
+                                <i class="fa-solid fa-arrow-right-from-bracket"></i> Sign Out
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Shortcuts Tab -->
+                <section class="settings-page" data-settings-page="shortcuts">
+                    <div class="settings-section-header">
+                        <h3>Keyboard Shortcuts</h3>
+                        <p class="settings-intro">Quick reference for power users.</p>
+                    </div>
+
+                    <div class="settings-group">
+                        <div class="settings-group-title">Navigation</div>
+                        <div class="shortcut-row"><span>New Chat</span><div class="shortcut-keys"><kbd>Ctrl</kbd><kbd>K</kbd></div></div>
+                        <div class="shortcut-row"><span>Toggle Sidebar</span><div class="shortcut-keys"><kbd>Ctrl</kbd><kbd>B</kbd></div></div>
+                        <div class="shortcut-row"><span>Open Settings</span><div class="shortcut-keys"><kbd>Ctrl</kbd><kbd>,</kbd></div></div>
+                        <div class="shortcut-row"><span>Creator Page</span><div class="shortcut-keys"><kbd>Ctrl</kbd><kbd>C</kbd></div></div>
+                        <div class="shortcut-row"><span>Close Dialog</span><div class="shortcut-keys"><kbd>Esc</kbd></div></div>
+                    </div>
+
+                    <div class="settings-group">
+                        <div class="settings-group-title">Chat</div>
+                        <div class="shortcut-row"><span>Send Message</span><div class="shortcut-keys"><kbd>Enter</kbd></div></div>
+                        <div class="shortcut-row"><span>New Line</span><div class="shortcut-keys"><kbd>Shift</kbd><kbd>Enter</kbd></div></div>
+                        <div class="shortcut-row"><span>Stop Generation</span><div class="shortcut-keys"><kbd>Esc</kbd></div></div>
+                    </div>
+                </section>
+
+                <!-- Data & Privacy Tab -->
+                <section class="settings-page" data-settings-page="data">
+                    <div class="settings-section-header">
+                        <h3>Data & Privacy</h3>
+                        <p class="settings-intro">Manage your conversation data.</p>
+                    </div>
+
+                    <div class="settings-group">
+                        <div class="settings-group-title">Conversations</div>
+
+                        <div class="danger-action-row">
+                            <div class="danger-info">
+                                <i class="fa-solid fa-broom"></i>
+                                <div>
+                                    <strong>Clear Current Chat</strong>
+                                    <small>Remove all messages in the active conversation</small>
+                                </div>
+                            </div>
+                            <button id="clearChatBtn" class="danger-btn" type="button">Clear</button>
+                        </div>
+
+                        <div class="danger-action-row">
+                            <div class="danger-info">
+                                <i class="fa-solid fa-trash-can"></i>
+                                <div>
+                                    <strong>Delete All Conversations</strong>
+                                    <small>Permanently erase all chat history</small>
+                                </div>
+                            </div>
+                            <button id="deleteAllChatsBtn" class="danger-btn" type="button">Delete All</button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- About Tab -->
+                <section class="settings-page" data-settings-page="about">
+                    <div class="settings-section-header">
+                        <h3>About Pixel AI</h3>
+                        <p class="settings-intro">Your personal AI workspace.</p>
+                    </div>
+
+                    <div class="about-card">
+                        <div class="about-logo">
+                            <img src="assets/pixel.png" alt="Pixel AI">
+                        </div>
+                        <div class="about-info">
+                            <h4>Pixel AI</h4>
+                            <span class="about-version">Version 2.0.0</span>
+                        </div>
+                    </div>
+
+                    <div class="settings-group">
+                        <div class="about-detail-row">
+                            <span class="about-label">Build</span>
+                            <span class="about-value">Production</span>
+                        </div>
+                        <div class="about-detail-row">
+                            <span class="about-label">Runtime</span>
+                            <span class="about-value">Node.js + Express</span>
+                        </div>
+                        <div class="about-detail-row">
+                            <span class="about-label">Models</span>
+                            <span class="about-value">7 AI providers</span>
+                        </div>
+                        <div class="about-detail-row">
+                            <span class="about-label">License</span>
+                            <span class="about-value">MIT</span>
+                        </div>
+                    </div>
+
+                    <p class="about-footer">Built with care. Powered by the best open & proprietary AI models.</p>
+                </section>
+            </div>
+        </div>
+    </dialog>
+
+    <!-- Context Menu for History Items -->
+    <div id="chatContextMenu" class="chat-context-menu" role="menu">
+        <button type="button" data-chat-action="rename">
+            <i class="fa-solid fa-pen"></i> Rename
+        </button>
+        <button type="button" data-chat-action="pin">
+            <i class="fa-solid fa-thumbtack"></i> Pin / Unpin
+        </button>
+        <button type="button" data-chat-action="delete" class="danger-action">
+            <i class="fa-solid fa-trash"></i> Delete
+        </button>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- Artworks Lightbox Dialog Modal            -->
+    <!-- ========================================== -->
+    <dialog id="artworksModal" class="artwork-lightbox-dialog">
+        <div class="artwork-lightbox-body">
+            <div class="artwork-lightbox-image-container">
+                <button id="artworksImgPrevBtn" class="lightbox-img-arrow prev" type="button" aria-label="Previous artwork"><i class="fa-solid fa-chevron-left"></i></button>
+                <img id="artworksModalImg" class="artwork-lightbox-img" src="" alt="Artwork full view">
+                <button id="artworksImgNextBtn" class="lightbox-img-arrow next" type="button" aria-label="Next artwork"><i class="fa-solid fa-chevron-right"></i></button>
+                <div class="artwork-lightbox-zoom-bar">
+                    <button id="artworksZoomOut" type="button" title="Zoom Out"><i class="fa-solid fa-minus"></i></button>
+                    <button id="artworksZoomReset" type="button" title="Reset Zoom"><i class="fa-solid fa-rotate-left"></i> 1:1</button>
+                    <button id="artworksZoomIn" type="button" title="Zoom In"><i class="fa-solid fa-plus"></i></button>
+                    <button id="artworksFullscreenBtn" type="button" title="Toggle Fullscreen"><i class="fa-solid fa-expand"></i></button>
+                </div>
+            </div>
+
+            <div class="artwork-lightbox-sidebar">
+                <div class="artwork-lightbox-header">
+                    <h2 id="artworksModalTitle" class="artwork-lightbox-title">Artwork Title</h2>
+                    <button id="artworksCloseBtn" class="artwork-lightbox-close" type="button" aria-label="Close modal">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+
+                <div class="artwork-lightbox-details">
+                    <div class="artwork-detail-row">
+                        <span class="artwork-detail-label">Category</span>
+                        <span id="artworksModalCategory" class="artwork-detail-value">Digital Art</span>
+                    </div>
+                    <div class="artwork-detail-row">
+                        <span class="artwork-detail-label">Description</span>
+                        <span id="artworksModalDesc" class="artwork-detail-value">Artwork description</span>
+                    </div>
+                    <div class="artwork-detail-row">
+                        <span class="artwork-detail-label">Software / Tool</span>
+                        <span id="artworksModalSoftware" class="artwork-detail-value">Clip Studio Paint</span>
+                    </div>
+                    <div class="artwork-detail-row">
+                        <span class="artwork-detail-label">Created</span>
+                        <span id="artworksModalDate" class="artwork-detail-value">2026-07-26</span>
+                    </div>
+                </div>
+
+                <div class="artwork-lightbox-nav">
+                    <button id="artworksPrevBtn" class="lightbox-nav-btn" type="button">
+                        <i class="fa-solid fa-chevron-left"></i> Previous
+                    </button>
+                    <button id="artworksNextBtn" class="lightbox-nav-btn" type="button">
+                        Next <i class="fa-solid fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </dialog>
+
+    <!-- ========================================== -->
+    <!-- User Chat: Create Room Modal               -->
+    <!-- ========================================== -->
+    <dialog id="createRoomModal" class="chat-modal-dialog">
+        <div class="chat-modal-header">
+            <h3><i class="fa-solid fa-plus" style="color:var(--gold);"></i> Create Chat Room</h3>
+            <button class="modal-close" type="button"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="chat-modal-input-group">
+            <label for="createRoomNameInput">Room Name</label>
+            <input id="createRoomNameInput" type="text" placeholder="e.g. Pixel Crew, Developer Lounge">
+        </div>
+        <p style="font-size: 12px; color: var(--text-secondary);">Creating a room generates a unique room code (e.g. PIXEL-7K4X9) that you can share with friends.</p>
+        <div class="chat-modal-actions">
+            <button class="chat-action-btn panel-close" type="button">Cancel</button>
+            <button id="confirmCreateRoomBtn" class="chat-action-btn primary" type="button">Create Room</button>
+        </div>
+    </dialog>
+
+    <!-- ========================================== -->
+    <!-- User Chat: Join Room Modal                 -->
+    <!-- ========================================== -->
+    <dialog id="joinRoomModal" class="chat-modal-dialog">
+        <div class="chat-modal-header">
+            <h3><i class="fa-solid fa-right-to-bracket" style="color:var(--gold);"></i> Join Chat Room</h3>
+            <button class="modal-close" type="button"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="chat-modal-input-group">
+            <label for="joinRoomCodeInput">Enter Room Code</label>
+            <input id="joinRoomCodeInput" type="text" placeholder="PIXEL-XXXXX" style="text-transform: uppercase; font-family:'JetBrains Mono', monospace;">
+        </div>
+        <div class="chat-modal-actions">
+            <button class="chat-action-btn panel-close" type="button">Cancel</button>
+            <button id="confirmJoinRoomBtn" class="chat-action-btn primary" type="button">Join Room</button>
+        </div>
+    </dialog>
+
+    <!-- ========================================== -->
+    <!-- User Chat: Search User Modal               -->
+    <!-- ========================================== -->
+    <dialog id="searchUserModal" class="chat-modal-dialog">
+        <div class="chat-modal-header">
+            <h3><i class="fa-solid fa-user-plus" style="color:var(--gold);"></i> Direct Chat</h3>
+            <button class="modal-close" type="button"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="chat-modal-input-group">
+            <label for="searchUserInput">Search User by Name or Email</label>
+            <input id="searchUserInput" type="text" placeholder="Type name or email...">
+        </div>
+        <div id="userSearchResults" style="max-height: 240px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px;"></div>
+        <div class="chat-modal-actions">
+            <button class="chat-action-btn panel-close" type="button">Close</button>
+        </div>
+    </dialog>
+
+    <!-- ========================================== -->
+    <!-- User Chat: Forward Message Modal           -->
+    <!-- ========================================== -->
+    <dialog id="forwardMessageModal" class="chat-modal-dialog">
+        <div class="chat-modal-header">
+            <h3><i class="fa-solid fa-share" style="color:var(--gold);"></i> Forward Message</h3>
+            <button class="modal-close" type="button"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <p style="font-size:12px;color:var(--text-secondary);margin-bottom:12px;">Select a conversation to forward this message to:</p>
+        <div id="forwardTargetList" style="max-height: 260px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px;"></div>
+        <div class="chat-modal-actions">
+            <button class="chat-action-btn panel-close" type="button">Cancel</button>
+        </div>
+    </dialog>
+
+    <!-- ========================================== -->
+    <!-- User Chat: Room Participants Modal         -->
+    <!-- ========================================== -->
+    <dialog id="roomParticipantsModal" class="chat-modal-dialog">
+        <div class="chat-modal-header">
+            <h3><i class="fa-solid fa-users" style="color:var(--gold);"></i> Room Members</h3>
+            <button class="modal-close" type="button"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div id="roomParticipantsList" style="max-height: 300px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; padding: 4px 0;"></div>
+        <div class="chat-modal-actions">
+            <button class="chat-action-btn panel-close" type="button">Close</button>
+        </div>
+    </dialog>
+
+    <!-- Multi-Select Batch Action Bar -->
+    <div id="userChatMultiSelectBar" class="multi-select-bar" style="display:none;">
+        <span id="multiSelectCount">0 messages selected</span>
+        <div style="display:flex; gap:8px;">
+            <button id="batchCopyBtn" class="chat-action-btn" type="button"><i class="fa-solid fa-copy"></i> Copy</button>
+            <button id="batchForwardBtn" class="chat-action-btn" type="button"><i class="fa-solid fa-share"></i> Forward</button>
+            <button id="batchDeleteBtn" class="chat-action-btn danger-action" type="button"><i class="fa-solid fa-trash"></i> Delete</button>
+            <button id="cancelMultiSelectBtn" class="chat-action-btn" type="button"><i class="fa-solid fa-xmark"></i> Cancel</button>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- Scripts                                    -->
+    <!-- ========================================== -->
+    <script src="js/config.js"></script>
+
+    <!-- Markdown & Highlighting -->
+    <script src="https://cdn.jsdelivr.net/npm/markdown-it/dist/markdown-it.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
+    <script src="js/formatter.js"></script>
+    <script src="js/codeblock.js"></script>
+
+    <!-- Supabase Auth & Storage -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase.js"></script>
+    <script src="js/auth.js"></script>
+
+    <!-- Application Components -->
+    <script src="js/models.js"></script>
+    <script src="js/conversations.js"></script>
+    <script src="js/sidebar.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/upload.js"></script>
+    <script src="js/chat.js"></script>
+    <script src="js/artworks.js"></script>
+    <script src="js/userChat.js"></script>
+
+</body>
+</html>

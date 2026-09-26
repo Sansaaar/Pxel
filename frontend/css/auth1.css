@@ -1,0 +1,396 @@
+/*=========================================================
+    PIXEL AI AUTHENTICATION
+    Version 2.0 - UI Aligned
+=========================================================*/
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+/* Assuming a dotted/pixelated font like 'Courier New' or a custom webfont is used for headers */
+@import url('https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&display=swap');
+
+/*=========================================================
+    VARIABLES
+=========================================================*/
+:root {
+    /* Precise background colors from image */
+    --bg: #09090b; 
+    --panel-bg: #0d0d0f;
+    --card-bg: rgba(13, 13, 15, 0.6);
+    --input-bg: #0d0d0f;
+    
+    /* Branding Colors */
+    --purple: #6a24cc;
+    --gold: #e2b34a;
+    --gold-bright: #f0c35a;
+    --text-muted: #71717a;
+    --text-main: #e4e4e7;
+    
+    --border-color: rgba(226, 179, 74, 0.1);
+    --border-card: rgba(226, 179, 74, 0.15);
+    
+    --transition: 0.25s ease;
+}
+
+/*=========================================================
+    RESET & BASE
+=========================================================*/
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: "Inter", sans-serif;
+    background-color: var(--bg);
+    /* Dotted grid background pattern matching the design */
+    background-image: radial-gradient(rgba(226, 179, 74, 0.12) 1px, transparent 0);
+    background-size: 24px 24px;
+    background-position: center;
+    color: var(--text-main);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.container {
+    width: 100%;
+    max-width: 1200px;
+    min-height: 85vh;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 60px;
+    padding: 40px;
+    align-items: center;
+}
+
+/*=========================================================
+    LEFT PANEL (Logo & Features)
+=========================================================*/
+.left-panel {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    padding-right: 40px;
+}
+
+.logo {
+    width: 100%;
+    margin-bottom: 40px;
+    text-align: center;
+}
+
+.logo-circle {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+/* Enhancing the purple/gold central logo glow */
+.logo-img {
+    max-width: 180px;
+    height: auto;
+    object-fit: contain;
+    filter: drop-shadow(0 0 25px rgba(106, 36, 204, 0.4)) drop-shadow(0 0 15px rgba(226, 179, 74, 0.3));
+}
+
+.logo h1 {
+    font-family: 'Courier Prime', monospace;
+    font-size: 64px;
+    font-weight: 700;
+    color: var(--gold);
+    letter-spacing: 4px;
+    margin-bottom: 15px;
+}
+
+.logo p {
+    color: var(--text-muted);
+    font-size: 16px;
+    line-height: 1.6;
+    max-width: 320px;
+    margin: 0 auto;
+}
+
+/* Feature List alignment styling */
+.feature-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    width: 100%;
+    max-width: 320px;
+    margin: 30px auto 0 auto;
+}
+
+.feature {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    color: var(--text-muted);
+    font-size: 15px;
+    font-weight: 400;
+    transition: var(--transition);
+}
+
+.feature:hover {
+    color: var(--text-main);
+    transform: translateX(4px);
+}
+
+.feature i {
+    font-size: 18px;
+    color: var(--gold);
+    width: 24px;
+    display: flex;
+    justify-content: center;
+}
+
+/*=========================================================
+    RIGHT PANEL (Login Card)
+=========================================================*/
+.right-panel {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.login-card {
+    width: 100%;
+    max-width: 480px;
+    padding: 50px 45px;
+    border-radius: 24px;
+    background: var(--card-bg);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--border-card);
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.heading {
+    text-align: center;
+    margin-bottom: 35px;
+}
+
+.heading h2 {
+    font-family: 'Courier Prime', monospace;
+    font-size: 38px;
+    color: var(--gold);
+    font-weight: 700;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+}
+
+.heading p {
+    color: var(--text-muted);
+    font-size: 14px;
+}
+
+/*=========================================================
+    FORM & INPUTS
+=========================================================*/
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.input-group {
+    position: relative;
+    width: 100%;
+}
+
+.input-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.input-wrapper i {
+    position: absolute;
+    left: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--gold);
+    opacity: 0.8;
+    font-size: 16px;
+    pointer-events: none;
+}
+
+.input-group input {
+    width: 100%;
+    height: 56px;
+    padding: 0 50px;
+    background: var(--input-bg);
+    color: var(--text-main);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    outline: none;
+    font-size: 15px;
+    transition: var(--transition);
+}
+
+.input-group input::placeholder {
+    color: var(--text-muted);
+    opacity: 0.6;
+}
+
+/* Interactive focus borders */
+.input-group input:focus {
+    border-color: rgba(226, 179, 74, 0.4);
+    box-shadow: 0 0 15px rgba(226, 179, 74, 0.05);
+}
+
+.eye-btn {
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.eye-btn:hover {
+    color: var(--text-main);
+}
+
+/*=========================================================
+    SIGN IN BUTTON (Gradient matches image exactly)
+=========================================================*/
+.login-btn {
+    width: 100%;
+    height: 56px;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    margin-top: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    
+    /* Horizontal gradient blending purple into warm gold */
+    background: linear-gradient(90deg, #511ca3 0%, #a46be6 35%, #e0b043 75%, #f2cd6d 100%);
+    box-shadow: 0 0 25px rgba(164, 107, 230, 0.2);
+    transition: var(--transition);
+}
+
+/* Inner text adjustment for button */
+.login-btn span {
+    font-family: 'Courier Prime', monospace;
+    font-size: 22px;
+    font-weight: 700;
+    color: #ffffff;
+    letter-spacing: 0.5px;
+    text-shadow: 0 1px 4px rgba(0,0,0,0.4);
+}
+
+.login-btn i {
+    color: #ffffff;
+    font-size: 18px;
+    transition: transform var(--transition);
+}
+
+.login-btn:hover {
+    opacity: 0.95;
+    box-shadow: 0 0 30px rgba(226, 179, 74, 0.3);
+}
+
+.login-btn:hover i {
+    transform: translateX(4px);
+}
+
+/*=========================================================
+    DIVIDER
+=========================================================*/
+.divider {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 24px 0;
+    color: var(--text-muted);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.divider::before,
+.divider::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.divider span {
+    margin: 0 15px;
+}
+
+/*=========================================================
+    GOOGLE BUTTON
+=========================================================*/
+.google-btn {
+    width: 100%;
+    height: 54px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    background: #0d0d0f;
+    color: var(--text-muted);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: var(--transition);
+}
+
+.google-btn img, .google-btn i {
+    font-size: 16px;
+}
+
+.google-btn:hover {
+    background: #121215;
+    color: var(--text-main);
+    border-color: rgba(226, 179, 74, 0.2);
+}
+
+/*=========================================================
+    FOOTER SIGNUP TEXT
+=========================================================*/
+.signup-text {
+    margin-top: 35px;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 14px;
+}
+
+.signup-text a {
+    color: var(--gold);
+    text-decoration: none;
+    font-weight: 500;
+    margin-left: 5px;
+    transition: var(--transition);
+}
+
+.signup-text a:hover {
+    color: var(--gold-bright);
+    text-decoration: underline;
+}
+
+/*=========================================================
+    RESPONSIVE MEDIA QUERIES
+=========================================================*/
+@media(max-width: 968px) {
+    .container {
+        grid-template-columns: 1fr;
+        gap: 40px;
+        padding: 20px;
+    }
+    .left-panel {
+        padding-right: 0;
+        align-items: center;
+    }
+}

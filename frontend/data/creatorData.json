@@ -1,0 +1,100 @@
+{
+  "about": "Creator and developer behind Pixel AI and other creative projects. Public biography will be updated with real content when provided.",
+
+  "pixelAI": [
+    {
+      "title": "Pixel AI",
+      "description": "AI assistant created and developed by Sansaar. A multi-model conversational AI workspace with a custom frontend.",
+      "category": "AI / Web Application",
+      "url": "#"
+    }
+  ],
+
+  "projects": [
+    {
+      "title": "Pixel AI",
+      "description": "AI assistant created and developed by Sansaar.",
+      "category": "AI Assistant",
+      "url": "#"
+    },
+    {
+      "title": "Mada",
+      "description": "Original animation/story project.",
+      "category": "Animation / Story",
+      "url": "#"
+    }
+  ],
+
+  "animation": [
+    {
+      "title": "Animation Project",
+      "description": "Placeholder for animation projects by Sansaar.",
+      "category": "Animation",
+      "url": "#"
+    }
+  ],
+
+  "artwork": [
+    {
+      "title": "Digital Artwork",
+      "description": "Placeholder for digital artwork.",
+      "category": "Digital Art",
+      "imageUrl": "#",
+      "date": ""
+    }
+  ],
+
+  "websites": [
+    {
+      "title": "Pixel AI",
+      "description": "Pixel AI web application.",
+      "url": "#"
+    }
+  ],
+
+  "socials": [
+    {
+      "platform": "GitHub",
+      "handle": "@sansaar",
+      "url": "#",
+      "icon": "fa-brands fa-github",
+      "colorClass": "github"
+    },
+    {
+      "platform": "YouTube",
+      "handle": "",
+      "url": "#",
+      "icon": "fa-brands fa-youtube",
+      "colorClass": "youtube"
+    },
+    {
+      "platform": "Instagram",
+      "handle": "@artist.sansaar",
+      "url": "#",
+      "icon": "fa-brands fa-instagram",
+      "colorClass": "instagram"
+    },
+    {
+      "platform": "TikTok",
+      "handle": "",
+      "url": "#",
+      "icon": "fa-brands fa-tiktok",
+      "colorClass": "tiktok"
+    },
+    {
+      "platform": "X / Twitter",
+      "handle": "",
+      "url": "#",
+      "icon": "fa-brands fa-x-twitter",
+      "colorClass": "twitter"
+    }
+  ],
+
+  "publicWork": [
+    {
+      "title": "Public Portfolio",
+      "description": "Public portfolio, collaborations, and achievements will be listed here.",
+      "url": "#"
+    }
+  ]
+}

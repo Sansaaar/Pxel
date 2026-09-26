@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pixel AI | Create Account</title>
+
+    <link rel="icon" type="image/x-icon" href="assets/pixel.png">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bitcount+Single:wght@100..900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+
+    <link rel="stylesheet" href="css/auth.css">
+</head>
+<body>
+
+    <div class="cursor-glow"></div>
+
+    <div class="container">
+
+        <section class="left-panel">
+            <div class="left-content">
+                <div class="logo">
+                    <div class="logo-circle">
+                        <img src="assets/pixel.png" alt="Pixel Logo" class="logo-img">
+                    </div>
+                    <h1>Pixel</h1>
+                    <p>Your intelligent AI companion built for creators & thinkers.</p>
+                </div>
+
+                <div class="feature-list">
+                    <div class="feature">
+                        <i class="fa-solid fa-bolt"></i>
+                        <span>Ultra-fast LPUs & Gemini 3.5</span>
+                    </div>
+                    <div class="feature">
+                        <i class="fa-solid fa-shield-halved"></i>
+                        <span>Private & Encrypted</span>
+                    </div>
+                    <div class="feature">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i>
+                        <span>Next-Generation Intelligence</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="right-panel">
+            <div class="login-card">
+                <div class="heading">
+                    <h2>Create Account</h2>
+                    <p>Join Pixel to unlock persistent memory and personalized AI.</p>
+                </div>
+
+                <div id="authError" class="auth-error-banner" style="display: none;"></div>
+
+                <form id="signupForm">
+                    <div class="input-group">
+                        <div class="input-wrapper">
+                            <i class="fa-regular fa-user"></i>
+                            <input type="text" id="username" placeholder="Username" required>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <div class="input-wrapper">
+                            <i class="fa-regular fa-envelope"></i>
+                            <input type="email" id="email" placeholder="Email address" required>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <div class="input-wrapper">
+                            <i class="fa-solid fa-lock"></i>
+                            <input type="password" id="password" placeholder="Create a password" required>
+                            <button type="button" class="eye-btn" id="togglePassword" aria-label="Toggle password visibility">
+                                <i class="fa-regular fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <div class="input-wrapper">
+                            <i class="fa-solid fa-lock"></i>
+                            <input type="password" id="confirmPassword" placeholder="Confirm password" required>
+                            <button type="button" class="eye-btn" id="toggleConfirmPassword" aria-label="Toggle password visibility">
+                                <i class="fa-regular fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="password-strength">
+                        <div class="strength-bar">
+                            <div class="strength-fill"></div>
+                        </div>
+                        <span class="strength-text">Password Strength</span>
+                    </div>
+
+                    <button type="submit" class="login-btn">Create Account</button>
+                </form>
+
+                <div class="divider">
+                    <span>OR</span>
+                </div>
+
+                <button id="googleLogin" class="google-btn" type="button">
+                    <i class="fa-brands fa-google"></i> Continue with Google
+                </button>
+
+                <button id="guestLogin" class="guest-btn" type="button">
+                    <i class="fa-solid fa-user-astronaut"></i> Continue as Guest
+                </button>
+
+                <p class="signup-text">
+                    Already have an account? <a href="login.html">Sign In</a>
+                </p>
+            </div>
+        </section>
+
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase.js"></script>
+    <script src="js/signup.js"></script>
+</body>
+</html>

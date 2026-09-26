@@ -1,0 +1,29 @@
+{
+  "name": "pixel-backend",
+  "version": "1.0.0",
+  "description": "Backend for Pixel AI",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "keywords": [],
+  "type": "commonjs",
+  "dependencies": {
+    "@google/genai": "^2.13.0",
+    "@supabase/supabase-js": "^2.110.0",
+    "cors": "^2.8.6",
+    "csv-parser": "^3.2.1",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "genai": "^0.0.18",
+    "google": "^2.1.0",
+    "groq-sdk": "^1.3.0",
+    "mammoth": "^1.12.0",
+    "multer": "^2.2.0",
+    "openai": "^6.45.0",
+    "pdf-parse": "^2.4.5"
+  }
+}

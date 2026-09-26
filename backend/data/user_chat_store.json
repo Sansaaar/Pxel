@@ -1,0 +1,150 @@
+{
+  "users": {
+    "usr-test-1": {
+      "id": "usr-test-1",
+      "email": "sansaar@pixel.local",
+      "display_name": "Sansaar",
+      "avatar": "S",
+      "last_seen": "2026-09-26T07:58:11.638Z"
+    },
+    "usr-test-2": {
+      "id": "usr-test-2",
+      "email": "alice@pixel.local",
+      "display_name": "Alice",
+      "avatar": "A",
+      "last_seen": "2026-09-26T07:58:11.638Z"
+    },
+    "usr-rich-1": {
+      "id": "usr-rich-1",
+      "email": "user@pixel.local",
+      "display_name": "Sansaar",
+      "avatar": "S",
+      "last_seen": "2026-09-26T08:03:12.027Z"
+    }
+  },
+  "conversations": {
+    "room_pixel-9n6sa": {
+      "id": "room_pixel-9n6sa",
+      "type": "room",
+      "code": "PIXEL-9N6SA",
+      "name": "Pixel Crew",
+      "owner_id": "usr-test-1",
+      "members": [
+        "usr-test-1",
+        "usr-test-2"
+      ],
+      "created_at": "2026-09-26T07:58:11.616Z",
+      "updated_at": "2026-09-26T07:58:11.627Z",
+      "last_message": {
+        "sender_name": "Alice",
+        "content": "Hello Pixel team! Room chat is working perfectly!",
+        "timestamp": "2026-09-26T07:58:11.627Z"
+      }
+    },
+    "direct_usr-test-1_usr-test-2": {
+      "id": "direct_usr-test-1_usr-test-2",
+      "type": "direct",
+      "code": null,
+      "name": "Alice",
+      "owner_id": "usr-test-1",
+      "members": [
+        "usr-test-1",
+        "usr-test-2"
+      ],
+      "created_at": "2026-09-26T07:58:11.639Z",
+      "updated_at": "2026-09-26T07:58:11.639Z",
+      "last_message": null
+    },
+    "room_pixel-ny96u": {
+      "id": "room_pixel-ny96u",
+      "type": "room",
+      "code": "PIXEL-NY96U",
+      "name": "Advanced Dev Lounge",
+      "topic": "Mastering AI Agent Workflows",
+      "owner_id": "usr-rich-1",
+      "members": [
+        "usr-rich-1"
+      ],
+      "created_at": "2026-09-26T08:03:11.983Z",
+      "updated_at": "2026-09-26T08:03:12.004Z",
+      "last_message": {
+        "sender_name": "Sansaar",
+        "content": "Check out this architecture document!",
+        "timestamp": "2026-09-26T08:03:12.004Z"
+      }
+    }
+  },
+  "messages": {
+    "room_pixel-9n6sa": [
+      {
+        "id": "msg_1790409491623_1qwkgj",
+        "chat_id": "room_pixel-9n6sa",
+        "sender_id": "system",
+        "sender_name": "System",
+        "sender_avatar": "S",
+        "content": "Alice joined the room.",
+        "timestamp": "2026-09-26T07:58:11.623Z",
+        "read_by": [
+          "system",
+          "usr-test-1"
+        ]
+      },
+      {
+        "id": "msg_1790409491627_fk6ubl",
+        "chat_id": "room_pixel-9n6sa",
+        "sender_id": "usr-test-2",
+        "sender_name": "Alice",
+        "sender_avatar": "A",
+        "content": "Hello Pixel team! Room chat is working perfectly!",
+        "timestamp": "2026-09-26T07:58:11.627Z",
+        "read_by": [
+          "usr-test-2",
+          "usr-test-1"
+        ]
+      }
+    ],
+    "direct_usr-test-1_usr-test-2": [],
+    "room_pixel-ny96u": [
+      {
+        "id": "msg_1790409791994_7wjms8",
+        "chat_id": "room_pixel-ny96u",
+        "sender_id": "system",
+        "sender_name": "System",
+        "sender_avatar": "S",
+        "content": "Room topic updated to: \"Mastering AI Agent Workflows\"",
+        "attachments": [],
+        "reactions": {},
+        "is_edited": false,
+        "timestamp": "2026-09-26T08:03:11.994Z",
+        "read_by": [
+          "system"
+        ]
+      },
+      {
+        "id": "msg_1790409792004_h2ef1y",
+        "chat_id": "room_pixel-ny96u",
+        "sender_id": "usr-rich-1",
+        "sender_name": "Sansaar",
+        "sender_avatar": "S",
+        "content": "Check out this UPDATED architecture spec!",
+        "attachments": [
+          {
+            "name": "spec.pdf",
+            "type": "application/pdf",
+            "url": "data:application/pdf;base64,..."
+          }
+        ],
+        "reactions": {
+          "🚀": [
+            "usr-rich-1"
+          ]
+        },
+        "is_edited": true,
+        "timestamp": "2026-09-26T08:03:12.004Z",
+        "read_by": [
+          "usr-rich-1"
+        ]
+      }
+    ]
+  }
+}

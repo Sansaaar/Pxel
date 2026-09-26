@@ -1,0 +1,6 @@
+Debug notes:
+- Overlay was set to z-index: var(--z-overlay) (1100).
+- Sidebar mobile z-index is var(--z-sidebar) (1200).
+- Despite that, overlay was appearing above sidebar for the user.
+- To ensure correct stacking, overlay z-index set to calc(var(--z-sidebar) - 10).
+- Sidebar z-index kept at var(--z-sidebar) and enforced with !important in mobile media query.
