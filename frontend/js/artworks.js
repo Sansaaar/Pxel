@@ -50,20 +50,36 @@
         `;
 
         try {
-            const apiBase = (window.API_BASE !== undefined ? window.API_BASE : (location.port === "3000" ? "" : "http://localhost:3000"));
-            const res = await fetch(apiBase + "/api/artworks");
+            const res = await fetch("/artworks.json", { cache: "no-cache" });
+            if (!res.ok) throw new Error(`Artwork manifest request failed (${res.status})`);
             const data = await res.json();
 
-            if (data.success && Array.isArray(data.artworks)) {
-                artworksList = data.artworks;
+            if (Array.isArray(data.artworks)) {
+                artworksList = data.artworks
+                    .filter(item => item && typeof item.filename === "string" && item.filename.trim())
+                    .map((item, index) => {
+                        const filename = item.filename.trim();
+                        return {
+                            id: `art-${index + 1}-${filename}`,
+                            filename,
+                            url: `/artworks/${encodeURIComponent(filename)}`,
+                            title: typeof item.title === "string" && item.title.trim() ? item.title : filename,
+                            description: item.description || null,
+                            category: item.category || null,
+                            software: item.software || null,
+                            date: item.date || null
+                        };
+                    });
                 populateCategoriesFilter(artworksList);
                 renderGallery();
             } else {
-                showEmptyState("No artworks found in directory.");
+                artworksList = [];
+                populateCategoriesFilter(artworksList);
+                showEmptyState("No artworks found.");
             }
         } catch (err) {
             console.error("[Artworks] Load error:", err);
-            showEmptyState("Failed to load artworks. Please check backend connection.");
+            showEmptyState("Unable to load artworks right now. Please try again later.");
         }
     }
 

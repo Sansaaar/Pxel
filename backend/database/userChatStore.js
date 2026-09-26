@@ -4,6 +4,7 @@
 // enforcing membership and identity checks safely.
 // ==========================================
 
+const crypto = require("node:crypto");
 const supabase = require("./supabase");
 
 // SSE Subscriptions map: userId → Set<res>
@@ -719,9 +720,10 @@ async function getPinnedMessages(chatId, userId) {
 // ─────────────────────────────────────────
 //  File Upload URL via Supabase Storage
 // ─────────────────────────────────────────
-async function getUploadSignedUrl(fileName, contentType) {
-    const safeName = `${Date.now()}_${fileName.replace(/[^a-zA-Z0-9._-]/g, "_")}`;
-    const path = `chat/${safeName}`;
+async function getUploadSignedUrl(fileName, contentType, chatId) {
+    const safeChatId = String(chatId).replace(/[^a-zA-Z0-9_-]/g, "");
+    const safeName = String(fileName).replace(/[^a-zA-Z0-9._-]/g, "_");
+    const path = `chat/${safeChatId}/${crypto.randomUUID()}_${safeName}`;
 
     const { data, error } = await supabase
         .storage
@@ -730,16 +732,56 @@ async function getUploadSignedUrl(fileName, contentType) {
 
     if (error) throw new Error("Failed to generate upload URL: " + error.message);
 
-    const publicUrl = supabase.storage
-        .from("pixel-chat-attachments")
-        .getPublicUrl(path).data.publicUrl;
-
     return {
         signedUrl: data.signedUrl,
         token: data.token,
-        path,
-        publicUrl
+        path
     };
+}
+
+function attachmentPathFromUrl(url) {
+    if (typeof url !== "string") return null;
+    const marker = "/storage/v1/object/public/pixel-chat-attachments/";
+    const markerIndex = url.indexOf(marker);
+    if (markerIndex < 0) return null;
+    try {
+        return decodeURIComponent(url.slice(markerIndex + marker.length).split(/[?#]/, 1)[0]);
+    } catch (_) {
+        return null;
+    }
+}
+
+async function getAttachmentSignedUrl({ chatId, path, userId }) {
+    const safeChatId = String(chatId).replace(/[^a-zA-Z0-9_-]/g, "");
+    if (typeof path !== "string" || !path.startsWith(`chat/${safeChatId}/`)) {
+        throw new Error("Invalid attachment path.");
+    }
+
+    const isMember = await checkConversationMember(chatId, userId);
+    if (!isMember) throw new Error("Access denied to this conversation.");
+
+    const { data: messages, error: messagesError } = await supabase
+        .from("pixel_chat_messages")
+        .select("attachments")
+        .eq("chat_id", chatId)
+        .eq("is_deleted", false);
+
+    if (messagesError) throw new Error("Unable to verify attachment access.");
+
+    const belongsToConversation = (messages || []).some(message =>
+        (Array.isArray(message.attachments) ? message.attachments : []).some(attachment =>
+            attachment?.path === path || attachmentPathFromUrl(attachment?.url) === path
+        )
+    );
+    if (!belongsToConversation) throw new Error("Attachment not found in this conversation.");
+
+    const { data, error } = await supabase
+        .storage
+        .from("pixel-chat-attachments")
+        .createSignedUrl(path, 60 * 60);
+
+    if (error) throw new Error("Unable to load this attachment.");
+    return data.signedUrl;
 }
 
 // ─────────────────────────────────────────
@@ -777,5 +819,6 @@ module.exports = {
     togglePinMessage,
     getPinnedMessages,
     getUploadSignedUrl,
+    getAttachmentSignedUrl,
     addSseClient
 };

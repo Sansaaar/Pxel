@@ -381,13 +381,34 @@ router.post("/upload-url", async (req, res) => {
         const user = await getAuthenticatedUser(req);
         if (!user) return res.status(401).json({ success: false, error: "Authentication required." });
 
-        const { fileName, contentType } = req.body;
+        const { fileName, contentType, chatId } = req.body;
         if (!fileName) return res.status(400).json({ success: false, error: "fileName is required." });
+        if (!chatId) return res.status(400).json({ success: false, error: "chatId is required." });
+        if (!await store.checkConversationMember(chatId, user.id)) {
+            return res.status(403).json({ success: false, error: "You are not a member of this conversation." });
+        }
 
-        const result = await store.getUploadSignedUrl(fileName, contentType || "application/octet-stream");
+        const result = await store.getUploadSignedUrl(fileName, contentType || "application/octet-stream", chatId);
         return res.json({ success: true, ...result });
     } catch (err) {
         return res.status(500).json({ success: false, error: err.message });
+    }
+});
+
+router.get("/attachment-url", async (req, res) => {
+    try {
+        const user = await getAuthenticatedUser(req);
+        if (!user) return res.status(401).json({ success: false, error: "Authentication required." });
+
+        const { chatId, path } = req.query;
+        if (!chatId || !path) {
+            return res.status(400).json({ success: false, error: "chatId and path are required." });
+        }
+
+        const signedUrl = await store.getAttachmentSignedUrl({ chatId, path, userId: user.id });
+        return res.json({ success: true, signedUrl });
+    } catch (err) {
+        return res.status(403).json({ success: false, error: err.message });
     }
 });
 

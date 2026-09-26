@@ -11,12 +11,26 @@
     // Internal list of processed attachment objects:
     // { id, file, name, type, size, data (base64 for images), content (text for docs), isImage }
     let uploadedFiles = [];
+    const imageMimeTypes = {
+        jpg: "image/jpeg",
+        jpeg: "image/jpeg",
+        png: "image/png",
+        webp: "image/webp",
+        gif: "image/gif"
+    };
+
+    function getFileType(file) {
+        if (file.type) return file.type;
+        const extension = (file.name.split(".").pop() || "").toLowerCase();
+        return imageMimeTypes[extension] || "application/octet-stream";
+    }
 
     // ------------------------------------------
     // File Processing (Base64 for images, text for docs)
     // ------------------------------------------
     async function processFile(file) {
-        const isImage = file.type.startsWith("image/");
+        const type = getFileType(file);
+        const isImage = type.startsWith("image/");
 
         return new Promise((resolve) => {
             const reader = new FileReader();
@@ -27,7 +41,7 @@
                         id: `${file.name}-${file.size}-${Date.now()}`,
                         file,
                         name: file.name,
-                        type: file.type || "image/png",
+                        type,
                         size: file.size,
                         data: e.target.result, // base64 data URL
                         isImage: true
@@ -42,7 +56,7 @@
                         id: `${file.name}-${file.size}-${Date.now()}`,
                         file,
                         name: file.name,
-                        type: file.type || "text/plain",
+                        type: type || "text/plain",
                         size: file.size,
                         content: e.target.result,
                         isImage: false
@@ -57,7 +71,7 @@
                         id: `${file.name}-${file.size}-${Date.now()}`,
                         file,
                         name: file.name,
-                        type: file.type || "application/octet-stream",
+                        type,
                         size: file.size,
                         content: `[File ${file.name} too large to inline (>2MB)]`,
                         isImage: false

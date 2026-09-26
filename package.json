@@ -1,7 +1,8 @@
 {
   "scripts": {
     "start": "npm --prefix backend start",
-    "dev": "npm --prefix backend run dev"
+    "dev": "npm --prefix backend run dev",
+    "generate:artworks": "node scripts/generate-artworks-manifest.js"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.0",

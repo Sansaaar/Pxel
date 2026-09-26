@@ -1792,10 +1792,34 @@ button {
     font-size: 12px;
 }
 .attachment-thumb {
-    width: 24px;
-    height: 24px;
+    width: 72px;
+    height: 72px;
+    object-fit: cover;
+    border-radius: 6px;
+    background: var(--surface, #121214);
+}
+.attachment-card:has(.attachment-thumb) { padding: 6px; }
+.user-chat-attachment-preview {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    max-width: 280px;
+}
+.user-chat-attachment-preview > span { overflow-wrap: anywhere; }
+.user-chat-attachment-thumb {
+    width: 56px;
+    height: 56px;
     object-fit: cover;
     border-radius: 4px;
+    background: var(--surface, #121214);
+}
+.user-chat-attachment-preview .remove-att {
+    flex: 0 0 28px;
+    width: 28px;
+    height: 28px;
+    border: 0;
+    color: inherit;
+    background: transparent;
 }
 .attachment-name {
     font-weight: 500;

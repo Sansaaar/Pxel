@@ -11,6 +11,7 @@
     let currentUser = null;
     let activeChatId = null;
     let activeChatObj = null;
+    const attachmentUrlCache = new Map();
     let conversationsList = [];
     let activeMessagesList = [];
     let pendingAttachments = [];
@@ -812,7 +813,8 @@
             attachHtml = `<div class="chat-msg-attachments-wrap">`;
             msg.attachments.forEach(a => {
                 if (a.type && a.type.startsWith("image/")) {
-                    attachHtml += `<img class="chat-msg-img-attachment" src="${esc(a.url)}" alt="${esc(a.name)}" onclick="if(window.openArtworkViewer){window.openArtworkViewer('${esc(a.url)}','${esc(a.name)}');}else{window.open('${esc(a.url)}','_blank');}"/>`;
+                    const directUrl = typeof a.url === "string" && a.url.startsWith("data:") ? a.url : "";
+                    attachHtml += `<img class="chat-msg-img-attachment" src="${esc(directUrl)}" data-attachment-path="${esc(a.path || "")}" alt="${esc(a.name || "Image attachment")}"/>`;
                 } else {
                     attachHtml += `<a class="chat-msg-file-attachment" href="${esc(a.url)}" target="_blank" download="${esc(a.name)}"><i class="fa-solid fa-paperclip"></i> ${esc(a.name || "Attachment")}</a>`;
                 }
@@ -929,6 +931,37 @@
         });
 
         messagesArea.appendChild(row);
+        row.querySelectorAll(".chat-msg-img-attachment").forEach((img, index) => {
+            const attachment = msg.attachments[index];
+            img.addEventListener("click", () => {
+                if (!img.getAttribute("src")) return;
+                if (window.openArtworkViewer) window.openArtworkViewer(img.src, attachment?.name || "Image attachment");
+                else window.open(img.src, "_blank", "noopener");
+            });
+            if (img.getAttribute("src")) return;
+            const path = attachment?.path;
+            if (!path) {
+                img.alt = "Image unavailable";
+                return;
+            }
+            const cacheKey = `${msg.chat_id}:${path}`;
+            let signedUrl = attachmentUrlCache.get(cacheKey);
+            if (!signedUrl) {
+                signedUrl = api(`/api/user-chat/attachment-url?chatId=${encodeURIComponent(msg.chat_id)}&path=${encodeURIComponent(path)}`)
+                    .then(data => {
+                    if (!data.success || !data.signedUrl) throw new Error(data.error || "Unable to load image");
+                    return data.signedUrl;
+                });
+                attachmentUrlCache.set(cacheKey, signedUrl);
+            }
+            Promise.resolve(signedUrl).then(url => {
+                attachmentUrlCache.set(cacheKey, url);
+                if (img.isConnected) img.src = url;
+            }).catch(() => {
+                attachmentUrlCache.delete(cacheKey);
+                if (img.isConnected) img.alt = "Image unavailable";
+            });
+        });
     }
 
     // ── Smart Scroll-To-Bottom ────────────────────
@@ -1100,7 +1133,11 @@
             return;
         }
 
-        const atts = [...pendingAttachments];
+        if (pendingAttachments.some(attachment => attachment.uploading)) {
+            showToast("Please wait for image uploads to finish.", "info");
+            return;
+        }
+        const atts = pendingAttachments.map(({ name, type, url, path, size }) => ({ name, type, url, path, size }));
         const replyTo = replyingTo?.id || null;
 
         const tempId = `temp_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
@@ -1258,47 +1295,55 @@
 
     // ── File Attachments & Drag and Drop ──────────
     async function handleFileSelection(files) {
-        if (!files || files.length === 0) return;
+        if (!files || files.length === 0 || !activeChatId) return;
 
         for (const file of Array.from(files)) {
+            const type = file.type || (/\.(jpe?g|png|gif|webp)$/i.test(file.name) ? `image/${file.name.split(".").pop().toLowerCase().replace("jpg", "jpeg")}` : "application/octet-stream");
+            const attachment = {
+                name: file.name,
+                type,
+                url: type.startsWith("image/") ? URL.createObjectURL(file) : "",
+                size: file.size,
+                uploading: true
+            };
+            pendingAttachments.push(attachment);
+            renderAttachmentsPreview();
             try {
                 const urlData = await api("/api/user-chat/upload-url", {
                     method: "POST",
-                    body: JSON.stringify({ fileName: file.name, contentType: file.type })
+                    body: JSON.stringify({ fileName: file.name, contentType: type, chatId: activeChatId })
                 });
 
                 if (!urlData.success) throw new Error(urlData.error || "Failed to get upload URL");
 
                 const uploadRes = await fetch(urlData.signedUrl, {
                     method: "PUT",
-                    headers: { "Content-Type": file.type },
+                    headers: { "Content-Type": type },
                     body: file
                 });
 
                 if (!uploadRes.ok) throw new Error("Upload failed: " + uploadRes.status);
 
-                pendingAttachments.push({
-                    name: file.name,
-                    type: file.type,
-                    url: urlData.publicUrl,
-                    size: file.size
-                });
+                attachment.path = urlData.path;
+                attachment.uploading = false;
+                if (attachment.url.startsWith("blob:")) URL.revokeObjectURL(attachment.url);
+                attachment.url = "";
                 renderAttachmentsPreview();
             } catch (err) {
                 console.warn("[UserChat] File upload error:", err);
                 if (file.size < 5 * 1024 * 1024) {
                     const reader = new FileReader();
                     reader.onload = e => {
-                        pendingAttachments.push({
-                            name: file.name,
-                            type: file.type,
-                            url: e.target.result,
-                            size: file.size
-                        });
+                        if (attachment.url.startsWith("blob:")) URL.revokeObjectURL(attachment.url);
+                        attachment.url = e.target.result;
+                        attachment.uploading = false;
                         renderAttachmentsPreview();
                     };
                     reader.readAsDataURL(file);
                 } else {
+                    if (attachment.url.startsWith("blob:")) URL.revokeObjectURL(attachment.url);
+                    pendingAttachments = pendingAttachments.filter(item => item !== attachment);
+                    renderAttachmentsPreview();
                     showToast(`File too large to upload: ${file.name}`, "error");
                 }
             }
@@ -1316,11 +1361,12 @@
         attachmentsPreview.innerHTML = "";
         pendingAttachments.forEach((a, idx) => {
             const pill = document.createElement("div");
-            pill.className = "reaction-pill";
+            pill.className = "reaction-pill user-chat-attachment-preview";
             pill.style.cursor = "default";
-            pill.innerHTML = `<i class="fa-solid fa-paperclip"></i> ${esc(a.name)} <i class="fa-solid fa-xmark remove-att" data-idx="${idx}" style="cursor:pointer;margin-left:4px;"></i>`;
+            pill.innerHTML = `${a.type?.startsWith("image/") && a.url ? `<img src="${esc(a.url)}" alt="" class="user-chat-attachment-thumb">` : `<i class="fa-solid fa-paperclip"></i>`}<span>${esc(a.name)}${a.uploading ? " · Uploading" : ""}</span><button class="remove-att" data-idx="${idx}" type="button" aria-label="Remove attachment"><i class="fa-solid fa-xmark"></i></button>`;
             pill.querySelector(".remove-att").addEventListener("click", () => {
-                pendingAttachments.splice(idx, 1);
+                const [removed] = pendingAttachments.splice(idx, 1);
+                if (removed?.url?.startsWith("blob:")) URL.revokeObjectURL(removed.url);
                 renderAttachmentsPreview();
             });
             attachmentsPreview.appendChild(pill);
@@ -1772,7 +1818,10 @@
         searchInput?.addEventListener("input", () => renderMessages());
 
         attachBtn?.addEventListener("click", () => fileInput?.click());
-        fileInput?.addEventListener("change", e => handleFileSelection(e.target.files));
+        fileInput?.addEventListener("change", e => {
+            handleFileSelection(e.target.files);
+            e.target.value = "";
+        });
 
         sendBtn?.addEventListener("click", sendMessage);
 
