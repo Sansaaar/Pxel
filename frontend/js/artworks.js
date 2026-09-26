@@ -50,11 +50,8 @@
         `;
 
         try {
-            const apiBase = (window.API_BASE || "").replace(/\/$/, "");
-            let res = await fetch(`${apiBase}/artworks.json`, { cache: "no-cache" });
-            if (!res.ok) {
-                res = await fetch(`${apiBase}/api/artworks`, { cache: "no-cache" });
-            }
+            const frontendBase = new URL(".", document.baseURI);
+            const res = await fetch(new URL("artworks.json", frontendBase), { cache: "no-cache" });
             if (!res.ok) throw new Error(`Artwork list request failed (${res.status})`);
             const data = await res.json();
 
@@ -66,7 +63,7 @@
                         return {
                             id: `art-${index + 1}-${filename}`,
                             filename,
-                            url: `${apiBase}/artworks/${encodeURIComponent(filename)}`,
+                            url: new URL(`artworks/${encodeURIComponent(filename)}`, frontendBase).href,
                             title: typeof item.title === "string" && item.title.trim() ? item.title : filename,
                             description: item.description || null,
                             category: item.category || null,
